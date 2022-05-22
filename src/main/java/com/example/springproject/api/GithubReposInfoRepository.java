@@ -22,7 +22,7 @@ public interface GithubReposInfoRepository extends JpaRepository<GithubReposInfo
             String language,Integer least_stars,String since,Integer open_issues,Integer limit);
     List<GithubReposInfo> getGithubReposInfosByLanguage(String language);
     @Query(
-            value = "select * from (select * from github_repos_info where id in (select repos_id from repos_topics where topic=?5))" +
+            value = "select * from (select * from github_repos_info where id in (select repos_id from repos_topics where topic=?5)) as t" +
                     " where case when (?1<>'') then language=?1 else 1=1 end" +
                     " and case when (?2<>-1) then stars>=?2 else 1=1 end" +
                     " and case when (?3<>'') then created_at>=?3 else 1=1 end" +
