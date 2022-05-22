@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" style="width: 100%;height:100%">
+    <head>
+        <meta charset="UTF-8">
+        <title>Repository</title>
+<!--        <script src="../static/js/echarts.js"></script>-->
+<!--        <script src="../static/js/jquery.js"></script>-->
+        <script src="http://localhost:8888/download/echarts"></script>
+        <script src="http://localhost:8888/download/jquery"></script>
+<!--        <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.2/dist/echarts.js"></script>-->
+<!--        <script src="https://code.jquery.com/jquery-3.0.0.min.js"></script>-->
+    </head>
+
+    <body style="width: 100%;height:100%">
+        <button type="button">Change Page</button>
+
+        <div id="column" style="width: 100%;height:100%"></div>
+        <script>
+            //需要一个二维数组，每行分别是nameList, starList, forkList, watchList, issueList
+            var dataList = {};
+
+            $.ajax({
+                type:"get",
+                async:false,
+                url: "http://localhost:8888/filterRepos?language=java",
+                dataType:"json",
+                success:function(data) {
+                    dataList = data;
+                },
+                error:function() {
+                    alert("请求失败");
+                }
+            });
+
+            const nameList = [];
+            for (let i = 0; i < dataList.length; i++) {
+                nameList.push(dataList[i].full_name);
+            }
+
+            const starList = [];
+            for (let i = 0; i < dataList.length; i++) {
+                starList.push(dataList[i].stars);
+            }
+
+            const forkList = [];
+            for (let i = 0; i < dataList.length; i++) {
+                forkList.push(dataList[i].forks);
+            }
+
+            const watchList = [];
+            for (let i = 0; i < dataList.length; i++) {
+                watchList.push(dataList[i].watch);
+            }
+
+            const myChart = echarts.init(document.getElementById('column'));
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                legend: {},
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value'
+                },
+                yAxis: {
+                    type: 'category',
+                    data: nameList
+                },
+                series: [
+                    {
+                        name: 'Star',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: starList
+                    },
+                    {
+                        name: 'Fork',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: forkList
+                    },
+                    {
+                        name: 'Watch',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: watchList
+                    },
+                ]
+            };
+
+            myChart.setOption(option);
+        </script>
+    </body>
+</html>

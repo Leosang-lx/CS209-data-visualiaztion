@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" style="width: 100%;height:100%">
+    <head>
+        <meta charset="UTF-8">
+        <title>Event</title>
+<!--        <script src="../static/js/echarts.js"></script>-->
+<!--        <script src="../static/js/jquery.js"></script>-->
+        <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.2/dist/echarts.js"></script>
+        <script src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+    </head>
+
+    <body style="width: 100%;height:100%">
+        <!--Button-->
+        <button type="button">Change Page</button>
+
+        <!--Column-->
+        <div id="line" style="width: 100%;height:100%"></div>
+        <script>
+            //需要一个二维数组，每行分别是：timeList, livenessList
+            var dataList = [];
+
+            $.ajax({
+                type:"get",
+                async:false,
+                url: "http://localhost:8888/issueEvents?repos_name=java-design-patterns&end=2022-05-18",
+                dataType:"json",
+                success:function(data) {
+                    dataList = data;
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown) {
+                    alert('test');
+                    alert(XMLHttpRequest.status);
+                    alert(XMLHttpRequest.readyState);
+                    alert(textStatus);
+                }
+            });
+
+            const myChart = echarts.init(document.getElementById('line'));
+
+            const option = {
+                xAxis: {
+                    type: 'category',
+                    data: dataList.dates
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        data: dataList.nums,
+                        type: 'line'
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+        </script>
+    </body>
+</html>
