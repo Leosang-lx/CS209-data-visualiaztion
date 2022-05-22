@@ -1,5 +1,6 @@
 package com.example.springproject.web;
 
+import getData.getData;
 import com.example.springproject.api.GithubReposInfoRepository;
 import com.example.springproject.api.IssueEventRepository;
 import com.example.springproject.domain.GithubReposInfo;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.Time;
+import java.sql.*;
 import java.time.LocalDate;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -146,7 +147,13 @@ public class DataController {
         return msl;
     }
 
+    @GetMapping("/topicsFrequency")
+    public Map<String, List<Object>> topicsFrequency(@RequestParam(value = "limit", required = false) Integer limit){
+        return getData.getTopicsFrequency(limit);
+    }
+
     @RequestMapping("/download/{filetype}/{filename}")
+    @CrossOrigin
     public String downloadFiles(
             @PathVariable("filetype") String filetype,
             @PathVariable("filename") String filename,

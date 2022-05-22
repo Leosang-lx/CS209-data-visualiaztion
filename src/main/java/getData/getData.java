@@ -8,56 +8,43 @@ import ch.qos.logback.core.encoder.EchoEncoder;
 import com.alibaba.fastjson.*;
 import org.jsoup.Jsoup;
 
+import javax.swing.tree.ExpandVetoException;
+
 public class getData {
-    private Map<String, String> headers;
-    private String url;
-    private String user;
-    private String password;
+    private static Map<String, String> headers;
+    private static final String url = "jdbc:postgresql://localhost:5432/spring_project";
+    private static final String user = "postgres";
+    private static final String password = "Xing011006";
 
-    public getData() {
-        try{
-            Properties properties = new Properties();
-            properties.load(new FileInputStream("config.properties"));
-            url = properties.getProperty("url");
-            user = properties.getProperty("user");
-            password = properties.getProperty("password");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    static {
+//        try{
+//            File file = new File("D:/AAAAA/2022spring/Software Engineer/myGithubToken.txt");
+//            FileReader fr = new FileReader(file);
+//            BufferedReader br = new BufferedReader(fr);
+//            String token;
+//            token = br.readLine();
+//            br.close();
+//            fr.close();
+//            if(token!=null&&token.length()==40){
+//                System.out.println("Token read!");
+//                headers = new HashMap<>();
+//                headers.put("Authorization","token "+ token);
+//            }
+//            else{
+//                System.out.println("Token is empty!");
+//            }
+//        }
+//        catch (Exception e){
+//            e.printStackTrace();
+//        }
+//    }
 
-    private int read_token(){
-        try{
-            File file = new File("D:/AAAAA/2022spring/Software Engineer/myGithubToken.txt");
-            FileReader fr = new FileReader(file);
-            BufferedReader br = new BufferedReader(fr);
-            String token;
-            token = br.readLine();
-            br.close();
-            fr.close();
-            if(token!=null&&token.length()==40){
-                System.out.println("Token read!");
-                headers = new HashMap<>();
-                headers.put("Authorization","token "+ token);
-                return 1;
-            }
-            else{
-                System.out.println("Token is empty!");
-                return 0;
-            }
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            return 0;
-        }
-    }
-
-    public void getReposData(){
+    public static void getReposData(){
         String language = "java";
-        String url = String.format("https://api.github.com/search/repositories?q=language:%s&sort=stars&page=1&per_page=100",language);
+        String api = String.format("https://api.github.com/search/repositories?q=language:%s&sort=stars&page=1&per_page=100",language);
         String insert = "insert into github_repos_info values (%d,'%s','%s','%s','%s','%s',%d,%d,%d,%d);";
         try{
-            org.jsoup.Connection.Response res = Jsoup.connect(url)
+            org.jsoup.Connection.Response res = Jsoup.connect(api)
                     .ignoreContentType(true)
                     .headers(headers)
                     .execute();
@@ -89,8 +76,8 @@ public class getData {
         }
     }
 
-    public void getReposIssues(){
-        String url = "https://api.github.com/repos/%s/issues?state=all&since=2022-04-18&page=%d&per_page=100";
+    public static void getReposIssues(){
+        String api = "https://api.github.com/repos/%s/issues?state=all&since=2022-04-18&page=%d&per_page=100";
         String select_template = "select id,full_name from github_repos_info";
         try{
             org.jsoup.Connection.Response res = null;
@@ -106,7 +93,7 @@ public class getData {
                 int repos_id = rs.getInt(1);
                 int page = 1;
                 while(true){
-                    res = Jsoup.connect(String.format(url,full_name,page++))
+                    res = Jsoup.connect(String.format(api,full_name,page++))
                                         .ignoreContentType(true)
                                         .headers(headers)
                                         .execute();
@@ -141,8 +128,8 @@ public class getData {
         }
     }
 
-    public void getIssueEvents(){
-        String url = "https://api.github.com/repos/%s/issues/events?page=%d&per_page=100";
+    public static void getIssueEvents(){
+        String api = "https://api.github.com/repos/%s/issues/events?page=%d&per_page=100";
         String select_template = "select id,full_name from github_repos_info";
         String earliest = "2022-04-18";
         try{
@@ -160,7 +147,7 @@ public class getData {
                 int page = 1;
                 boolean before = false;
                 while(true){
-                    res = Jsoup.connect(String.format(url,full_name,page++))
+                    res = Jsoup.connect(String.format(api,full_name,page++))
                             .ignoreContentType(true)
                             .headers(headers)
                             .execute();
@@ -197,7 +184,7 @@ public class getData {
         }
     }
 
-    public void getReposTopics(){
+    public static void getReposTopics(){
         String url = "https://api.github.com/repos/%s/topics";
         String select_template = "select id,full_name from github_repos_info;";
         try{
@@ -237,17 +224,35 @@ public class getData {
         }
     }
 
+    public static Map<String, List<Object>> getTopicsFrequency(Integer limit){
+        Map<String, List<Object>> msi = new HashMap<>();
+        Integer num = limit!=null&&limit>0? limit : 10;
+        String query = String.format("select a.topic, count(*) as cnt from (select topic from repos_topics) as a group by a.topic order by cnt desc limit %d;",num);
+        try{
+            List<Object> ls = new ArrayList<>();
+            List<Object> li = new ArrayList<>();
+            Connection conn = null;
+            Statement stmt = null;
+            conn = DriverManager.getConnection(url,user,password);
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while(rs.next()){
+                ls.add(rs.getString(1));
+                li.add(rs.getInt(2));
+            }
+            msi.put("topic", ls);
+            msi.put("frequency", li);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return msi;
+    }
+
     public static void main(String[] args) throws Exception{
         Class.forName("org.postgresql.Driver");
-        getData get = new getData();
-        if(get.read_token()==1){
-            get.getReposData();
-            get.getReposIssues();
-            get.getIssueEvents();
-            get.getReposTopics();
-        }
-        else{
-            System.out.println("Got no token to access!");
-        }
+        getReposData();
+        getReposIssues();
+        getIssueEvents();
+        getReposTopics();
     }
 }
