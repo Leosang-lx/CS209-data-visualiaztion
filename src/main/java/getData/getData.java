@@ -1,7 +1,9 @@
-package com.example.springproject;
+package getData;
 
 public class getData {
-    public
+    public void getReposData(){
+
+    }
     public static void main(String[] args) {
 
     }
