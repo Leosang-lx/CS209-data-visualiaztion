@@ -3,6 +3,8 @@ package getData;
 import java.io.*;
 import java.util.*;
 import java.sql.*;
+
+import ch.qos.logback.core.encoder.EchoEncoder;
 import com.alibaba.fastjson.*;
 import org.jsoup.Jsoup;
 
@@ -12,12 +14,18 @@ public class getData {
     private String user;
     private String password;
 
-    public getData(){
-        String url = "jdbc:postgresql://localhost:5432/spring_project";
-        String user = "postgres";
-        String password = "Xing011006";
+    public getData() {
+        try{
+            Properties properties = new Properties();
+            properties.load(new FileInputStream("config.properties"));
+            url = properties.getProperty("url");
+            user = properties.getProperty("user");
+            password = properties.getProperty("password");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-//    private static
+
     private int read_token(){
         try{
             File file = new File("D:/AAAAA/2022spring/Software Engineer/myGithubToken.txt");
@@ -43,6 +51,7 @@ public class getData {
             return 0;
         }
     }
+
     public void getReposData(){
         String language = "java";
         String url = String.format("https://api.github.com/search/repositories?q=language:%s&sort=stars&page=1&per_page=100",language);
@@ -79,6 +88,7 @@ public class getData {
             e.printStackTrace();
         }
     }
+
     public void getReposIssues(){
         String url = "https://api.github.com/repos/%s/issues?state=all&since=2022-04-18&page=%d&per_page=100";
         String select_template = "select id,full_name from github_repos_info";
@@ -230,10 +240,14 @@ public class getData {
     public static void main(String[] args) throws Exception{
         Class.forName("org.postgresql.Driver");
         getData get = new getData();
-        get.read_token();
-        get.getReposData();
-        get.getReposIssues();
-        get.getIssueEvents();
-        get.getReposTopics();
+        if(get.read_token()==1){
+            get.getReposData();
+            get.getReposIssues();
+            get.getIssueEvents();
+            get.getReposTopics();
+        }
+        else{
+            System.out.println("Got no token to access!");
+        }
     }
 }
