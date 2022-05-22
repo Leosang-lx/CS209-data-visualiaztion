@@ -6,7 +6,13 @@ import json
 import requests
 import datetime
 
-headers={"Authorization":"token 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"}
+
+file = open('D:/AAAAA/2022spring/Software Engineer/myGithubToken.txt','r')
+token = file.readline()
+file.close()
+# print(token)
+
+headers={"Authorization":token}
 time = datetime.datetime.now()
 deltaTime = datetime.timedelta(days=30)
 # print(time.strftime('%Y-%m-%dT%H:%M:%SZ'))
@@ -124,7 +130,7 @@ conn = psycopg2.connect(database="spring_project", user="postgres", password="Xi
 curr = conn.cursor()
 # getReposIssues()
 # getIssueEvents()
-getReposTopics()
+# getReposTopics()
 
 # sql = "insert into github_repos_info values ({},'{}','{}','{}','{}','{}',{},{},{},{});"
 # for i in items:
