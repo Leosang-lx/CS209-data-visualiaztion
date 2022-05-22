@@ -1,3 +1,5 @@
+package getData;
+
 public class restAPI {
     /**
      * add with following searching factors, at least one param is not null
