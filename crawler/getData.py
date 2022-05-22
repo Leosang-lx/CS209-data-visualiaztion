@@ -22,7 +22,7 @@ since = (time-deltaTime).strftime('%Y-%m-%dT%H:%M:%SZ')
 
 def getReposData():  
     language = 'java'
-    url = 'https://api.github.com/search/repositories?q=language:{}&sort=stars&page=1&per_page=100&token=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'.format(language)
+    url = 'https://api.github.com/search/repositories?q=language:{}&sort=stars&page=1&per_page=100'.format(language)
     sql = "insert into github_repos_info values ({},'{}','{}','{}','{}','{}',{},{},{},{});"
     r = requests.get(url)
     if r.status_code==200:
