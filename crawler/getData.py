@@ -1,5 +1,4 @@
 import datetime
-from socket import NI_MAXSERV
 import requests
 import psycopg2
 import json
@@ -24,12 +23,25 @@ since = (time-deltaTime).strftime('%Y-%m-%dT%H:%M:%SZ')
 def getReposData():  
     language = 'java'
     url = 'https://api.github.com/search/repositories?q=language:{}&sort=stars&page=1&per_page=100&token=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'.format(language)
-
+    sql = "insert into github_repos_info values ({},'{}','{}','{}','{}','{}',{},{},{},{});"
     r = requests.get(url)
     if r.status_code==200:
-        return r.json()['items']
+        items = r.json()['items']
+        for i in items:
+            s = sql.format(i['id'],
+            i['name'],
+            i['full_name'],
+            i['html_url'],
+            i['language'].lower(),
+            i['created_at'],
+            i['stargazers_count'],
+            i['forks'],
+            i['watchers'],
+            i['open_issues'])
+            print(s)
+            curr.execute(s)
     else:
-        return 'null'
+        print(r.status_code)
 
 def getReposIssues():
     language = 'java'
@@ -128,27 +140,10 @@ def getReposTopics():
 
 conn = psycopg2.connect(database="spring_project", user="postgres", password="Xing011006", host="127.0.0.1", port="5432")
 curr = conn.cursor()
+# getReposData
 # getReposIssues()
 # getIssueEvents()
 # getReposTopics()
-
-# sql = "insert into github_repos_info values ({},'{}','{}','{}','{}','{}',{},{},{},{});"
-# for i in items:
-#     s = sql.format(i['id'],
-#     i['name'],
-#     i['full_name'],
-#     i['html_url'],
-#     i['language'].lower(),
-#     i['created_at'],
-#     i['stargazers_count'],
-#     i['forks'],
-#     i['watchers'],
-#     i['open_issues'])
-#     print(s)
-#     curr.execute(s)
-
-# items = getReposData()
-# print(items)
 
 curr.close()
 conn.commit()
