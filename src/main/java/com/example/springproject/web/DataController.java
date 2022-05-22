@@ -51,14 +51,28 @@ public class DataController {
             @RequestParam(value="stars", required = false)@Nullable Integer least_stars,
             @RequestParam(value="since", required = false)@Nullable String since,
             @RequestParam(value="open_issues", required = false)@Nullable Integer open_issues,
+            @RequestParam(value="topic",required = false)@Nullable String topic,
             @RequestParam(value="limit", required = false)@Nullable Integer limit){
-        return githubReposInfoRepository.getGithubReposInfos(
-                language!=null?language:"",
-                least_stars!=null?least_stars:-1,
-                since!=null?since:"",
-                open_issues!=null?open_issues:-1,
-                limit!=null?limit:30);
+        if(topic==null){
+            return githubReposInfoRepository.getGithubReposInfos(
+                    language!=null?language:"",
+                    least_stars!=null?least_stars:-1,
+                    since!=null?since:"",
+                    open_issues!=null?open_issues:-1,
+                    limit!=null?limit:30);
+        }
+        else{
+            return githubReposInfoRepository.getGithubReposInfosWithTopic(
+                    language!=null?language:"",
+                    least_stars!=null?least_stars:-1,
+                    since!=null?since:"",
+                    open_issues!=null?open_issues:-1,
+                    topic,
+                    limit!=null?limit:30
+            );
+        }
     }
+
     @GetMapping("/issueEvents")
     @CrossOrigin
     public Map<String, List<Object>> getIssueEvents(

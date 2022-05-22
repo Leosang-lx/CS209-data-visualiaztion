@@ -21,8 +21,5 @@ public class PageTransport {
     public String homepage(){
         return "redirect:/repository";
     }
-//    @GetMapping("/echarts.js")
-//    public String get_echarts(){
-//        return "echarts"
-//    }
+
 }

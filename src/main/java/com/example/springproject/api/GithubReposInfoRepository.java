@@ -21,5 +21,14 @@ public interface GithubReposInfoRepository extends JpaRepository<GithubReposInfo
     List<GithubReposInfo> getGithubReposInfos(
             String language,Integer least_stars,String since,Integer open_issues,Integer limit);
     List<GithubReposInfo> getGithubReposInfosByLanguage(String language);
-
+    @Query(
+            value = "select * from (select * from github_repos_info where id in (select repos_id from repos_topics where topic=?5))" +
+                    " where case when (?1<>'') then language=?1 else 1=1 end" +
+                    " and case when (?2<>-1) then stars>=?2 else 1=1 end" +
+                    " and case when (?3<>'') then created_at>=?3 else 1=1 end" +
+                    " and case when (?4<>-1) then open_issues>=?4 else 1=1 end" +
+                    " limit ?6", nativeQuery = true)
+    List<GithubReposInfo> getGithubReposInfosWithTopic(
+            String language,Integer least_stars,String since,Integer open_issues,String topic,Integer limit
+    );
 }
