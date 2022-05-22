@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class PageTransport {
-//    @Autowired
-//    private
 
     @GetMapping("/repository")
     public String repository(){
@@ -21,5 +19,6 @@ public class PageTransport {
     public String homepage(){
         return "redirect:/repository";
     }
+
 
 }
