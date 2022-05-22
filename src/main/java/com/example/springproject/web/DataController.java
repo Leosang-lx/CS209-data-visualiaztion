@@ -132,9 +132,13 @@ public class DataController {
         return msl;
     }
 
-    @RequestMapping("/download/echarts")
-    public String download_echarts(HttpServletResponse response) throws Exception{
-        File file = new File("D:\\AAAAA\\2021fall\\OOAD\\lab\\lab7\\springproject\\src\\main\\resources\\static\\js\\echarts.js");
+    @RequestMapping("/download/{filetype}/{filename}")
+    public String downloadFiles(
+            @PathVariable("filetype") String filetype,
+            @PathVariable("filename") String filename,
+            HttpServletResponse response) throws Exception{
+        String path = "D:\\AAAAA\\2022spring\\Java2\\project\\CS209-data-visualiaztion\\src\\main\\resources\\static\\%s\\%s";
+        File file = new File(String.format(path,filetype,filename));
         if (file.exists()) {
             response.reset();
             response.setContentType("application/octet-stream");
@@ -176,54 +180,6 @@ public class DataController {
             }
             return "Download successfully!";
         }
-        return "Download failed!";
-    }
-
-    @RequestMapping("/download/jquery")
-    public String download_jquery(HttpServletResponse response) throws Exception{
-//        String filenam
-        File file = new File("D:\\AAAAA\\2021fall\\OOAD\\lab\\lab7\\springproject\\src\\main\\resources\\static\\js\\jquery.js");
-        if (file.exists()) {
-            response.reset();
-            response.setContentType("application/octet-stream");
-            response.setCharacterEncoding("utf-8");
-            response.setContentLengthLong(file.length());
-            response.setHeader("Content-Disposition","attachment;fileName="+URLEncoder.encode(file.getName(), StandardCharsets.UTF_8));
-            byte[] buffer = new byte[1024];
-            FileInputStream fis = null;
-            BufferedInputStream bis = null;
-            try {
-                fis = new FileInputStream(file);
-                bis = new BufferedInputStream(fis);
-                OutputStream os = response.getOutputStream();
-                int i = 0;
-                while ((i = bis.read(buffer)) != -1) {
-                    os.write(buffer, 0, i);
-                    os.flush();
-                }
-                System.out.println("Download file successfully!");
-            }
-            catch (Exception e) {
-                System.out.println("Download file failed!");
-            }
-            finally {
-                if (bis != null) {
-                    try {
-                        bis.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            return "Download successfully!";
-        }
-        return "Download failed!";
+        return "File not found!";
     }
 }
