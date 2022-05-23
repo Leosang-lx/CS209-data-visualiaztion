@@ -41,14 +41,14 @@ public class DataController {
         return githubReposInfoRepository.findAll();
     }
 
-    @GetMapping("/reposInfo")
-    @CrossOrigin
-    public List<GithubReposInfo> getGithubReposByLanguage(@RequestParam(value = "language", required = false) String language){
-        if(language==null){
-
-        }
-        return githubReposInfoRepository.getGithubReposInfosByLanguage(language);
-    }
+//    @GetMapping("/reposInfo")
+//    @CrossOrigin
+//    public List<GithubReposInfo> getGithubReposByLanguage(@RequestParam(value = "language", required = false) String language){
+//        if(language==null){
+//
+//        }
+//        return githubReposInfoRepository.getGithubReposInfosByLanguage(language);
+//    }
     @GetMapping("/filterRepos")
     @CrossOrigin
     public List<GithubReposInfo> getGithubRepos(
