@@ -2,15 +2,13 @@ package com.example.springproject.web;
 
 import com.example.springproject.api.IssueRepository;
 import com.example.springproject.domain.Issue;
+import com.example.springproject.domain.UserEvent;
 import getData.getData;
 import com.example.springproject.api.GithubReposInfoRepository;
 import com.example.springproject.api.IssueEventRepository;
 import com.example.springproject.domain.GithubReposInfo;
 import com.example.springproject.domain.IssueEvent;
-import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
-import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +40,12 @@ public class DataController {
     @CrossOrigin
     public List<GithubReposInfo> getAllRepos(){
         return githubReposInfoRepository.findAll();
+    }
+
+    @GetMapping("/repos/{repos_id}")
+    @CrossOrigin
+    public GithubReposInfo getReposById(@PathVariable(value = "repos_id")Integer repos_id){
+        return githubReposInfoRepository.getById(repos_id);
     }
 
 //    @GetMapping("/reposInfo")
@@ -190,6 +194,18 @@ public class DataController {
             @PathVariable(value = "username")@NotNull String username,
             @RequestParam(value = "limit", required = false) Integer limit){
         return getData.getUserRepos(username, limit==null||limit<=0||limit>100? 30:limit);
+    }
+
+        @GetMapping("/{username}/userevents")
+    @CrossOrigin
+    public List<UserEvent> getUserEvents(
+            @PathVariable(value = "username")@NotNull String username,
+            @RequestParam(value = "since",required = false) String since){
+        LocalDate thirtyBefore = LocalDate.now().minusDays(30);
+        if(since==null||LocalDate.parse(since).compareTo(thirtyBefore)<0){
+            return getData.getUserEvents(username,thirtyBefore.toString());
+        }
+        return getData.getUserEvents(username,since);
     }
 
     @RequestMapping("/download/{filetype}/{filename}")

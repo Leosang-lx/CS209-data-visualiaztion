@@ -6,6 +6,8 @@ import java.sql.*;
 
 import com.alibaba.fastjson.*;
 import com.example.springproject.domain.GithubReposInfo;
+import com.example.springproject.domain.UserEvent;
+import org.apache.catalina.User;
 import org.jsoup.Jsoup;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -312,7 +314,46 @@ public class getData {
         return lgri;
     }
 
-        public static void main(String[] args) throws Exception{
+    public static List<UserEvent> getUserEvents(String username, String from){
+        List<UserEvent> lue = new ArrayList<>();
+        int page = 1;
+        String template = "https://api.github.com/users/%s/events?page=%d&per_page=100";
+        boolean after = true;
+        try {
+            while(after){
+                String url = String.format(template,username,page++);
+                org.jsoup.Connection.Response res = Jsoup.connect(url)
+                        .ignoreContentType(true)
+                        .headers(headers)
+                        .execute();
+                if (res.statusCode() == 200) {
+                    JSONArray ja = JSON.parseArray(res.body());
+                    int len = ja.size();
+                    for(int i = 0;i<len;i++){
+                        JSONObject jo = ja.getJSONObject(i);
+                        String date = jo.getString("created_at");
+                        if(date.substring(0,10).compareTo(from)<0){
+                            after = false;
+                            break;
+                        }
+                        UserEvent ue = new UserEvent();
+                        ue.setId(jo.getLong("id"));
+                        ue.setType(jo.getString("type"));
+                        ue.setActor_id(jo.getJSONObject("actor").getInteger("id"));
+                        ue.setRepos_id(jo.getJSONObject("repo").getInteger("id"));
+                        ue.setCreated_at(jo.getString("created_at"));
+                        lue.add(ue);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+        return lue;
+    }
+
+    public static void main(String[] args) throws Exception{
         Class.forName("org.postgresql.Driver");
         getReposData();
         getReposIssues();
