@@ -5,7 +5,9 @@ import java.util.*;
 import java.sql.*;
 
 import com.alibaba.fastjson.*;
+import com.example.springproject.domain.GithubReposInfo;
 import org.jsoup.Jsoup;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.validation.constraints.NotNull;
 
@@ -274,7 +276,43 @@ public class getData {
         return msi;
     }
 
-    public static void main(String[] args) throws Exception{
+    public static List<GithubReposInfo> getUserRepos(String username, Integer limit){
+        List<GithubReposInfo> lgri = new ArrayList<>();
+        String url = String.format("https://api.github.com/users/%s/repos?per_page=%d",username,limit);
+        try{
+            org.jsoup.Connection.Response res = Jsoup.connect(url)
+                    .ignoreContentType(true)
+                    .headers(headers)
+                    .execute();
+            if(res.statusCode()==200){
+                JSONArray ja = JSON.parseArray(res.body());
+                int len = ja.size();
+                for(int i = 0;i<len;i++){
+                    JSONObject jo = ja.getJSONObject(i);
+                    GithubReposInfo g = new GithubReposInfo();
+                    g.setId(jo.getInteger("id"));
+                    g.setFullName(jo.getString("full_name"));
+                    g.setHtml_url(jo.getString("html_url"));
+                    g.setLanguage(jo.getString("language"));
+                    g.setCreated_at(jo.getString("created_at"));
+                    g.setStars(jo.getInteger("stargazers_count"));
+                    g.setForks(jo.getInteger("forks_count"));
+                    g.setWatch(jo.getInteger("watchers_count"));
+                    g.setOpen_issues(jo.getInteger("open_issues"));
+                    lgri.add(g);
+                }
+            }
+            else{
+                System.out.println(res.statusCode());
+                return new ArrayList<>();
+            }
+        } catch (Exception e) {
+                e.printStackTrace();
+        }
+        return lgri;
+    }
+
+        public static void main(String[] args) throws Exception{
         Class.forName("org.postgresql.Driver");
         getReposData();
         getReposIssues();

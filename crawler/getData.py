@@ -11,7 +11,7 @@ token = file.readline()
 file.close()
 # print(token)
 
-headers={"Authorization":token}
+headers={"Authorization":token,"Accept":"application/vnd.github.v3+json"}
 time = datetime.datetime.now()
 deltaTime = datetime.timedelta(days=30)
 # print(time.strftime('%Y-%m-%dT%H:%M:%SZ'))
@@ -137,6 +137,9 @@ def getReposTopics():
                 curr.execute(insert)
         else:
             print(r.status_code)
+
+def getReposLabels():
+    url = 'https://api.github.com/search/labels?repository_id=22790488&&page=1&per_page=100'
 
 conn = psycopg2.connect(database="spring_project", user="postgres", password="Xing011006", host="127.0.0.1", port="5432")
 curr = conn.cursor()

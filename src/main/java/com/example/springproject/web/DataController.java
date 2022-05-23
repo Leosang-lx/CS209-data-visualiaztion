@@ -9,9 +9,12 @@ import com.example.springproject.domain.GithubReposInfo;
 import com.example.springproject.domain.IssueEvent;
 import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.data.web.HateoasSortHandlerMethodArgumentResolver;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
+
+import org.jsoup.*;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -179,6 +182,14 @@ public class DataController {
             msi.put("closed",0);
         }
         return msi;
+    }
+
+    @GetMapping("/{username}/list_repositories")
+    @CrossOrigin
+    public List<GithubReposInfo> getUserRepos(
+            @PathVariable(value = "username")@NotNull String username,
+            @RequestParam(value = "limit", required = false) Integer limit){
+        return getData.getUserRepos(username, limit==null||limit<=0||limit>100? 30:limit);
     }
 
     @RequestMapping("/download/{filetype}/{filename}")
