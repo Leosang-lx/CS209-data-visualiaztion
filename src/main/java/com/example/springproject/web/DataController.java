@@ -170,8 +170,8 @@ public class DataController {
 
     @GetMapping("/{repos_name}/issues_num")
     @CrossOrigin
-    public Map<String, Integer> getReposIssuesNum(@PathVariable(value = "repos_name")@NotNull String repos_name){
-        Map<String, Integer> msi = getData.getIssuesNum(repos_name);
+    public Map<String, Object> getReposIssuesNum(@PathVariable(value = "repos_name")@NotNull String repos_name){
+        Map<String, Object> msi = getData.analyseIssues(repos_name);
         if(!msi.containsKey("open")){
             msi.put("open",0);
         }

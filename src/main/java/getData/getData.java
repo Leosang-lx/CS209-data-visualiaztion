@@ -249,8 +249,8 @@ public class getData {
         return msi;
     }
 
-    public static Map<String, Integer> getIssuesNum(@NotNull String repos_name){
-        Map<String, Integer> msi = new HashMap<>();
+    public static Map<String, Object> analyseIssues(@NotNull String repos_name){
+        Map<String, Object> msi = new HashMap<>();
         String query = String.format("select i.state,count(i.state) from issue i left join github_repos_info gri on gri.id = i.repos_id" +
                 " where gri.name = '%s'" +
                 " group by i.state;",repos_name);
@@ -263,6 +263,9 @@ public class getData {
             while(rs.next()){
                 msi.put(rs.getString(1),rs.getInt(2));
             }
+            rs = stmt.executeQuery(String.format("select avg(date_part('day',cast(to_date(substr(i.closed_at,1,10), 'YYYY-MM-DD') as TIMESTAMP) - cast(to_date(substr(i.created_at,1,10), 'YYYY-MM-DD') as TIMESTAMP))) from issue i left join github_repos_info gri on gri.id = i.repos_id where state = 'closed' and gri.name = '%s';",repos_name));
+            rs.next();
+            msi.put("avg_closed_time",rs.getDouble(1));
             stmt.close();
             conn.close();
         } catch (Exception e) {
