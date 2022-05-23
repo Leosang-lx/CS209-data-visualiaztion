@@ -1,5 +1,7 @@
 package com.example.springproject.web;
 
+import com.example.springproject.api.IssueRepository;
+import com.example.springproject.domain.Issue;
 import getData.getData;
 import com.example.springproject.api.GithubReposInfoRepository;
 import com.example.springproject.api.IssueEventRepository;
@@ -30,6 +32,8 @@ public class DataController {
     GithubReposInfoRepository githubReposInfoRepository;
     @Autowired
     IssueEventRepository issueEventRepository;
+    @Autowired
+    IssueRepository issueRepository;
 
     @GetMapping("/allRepos")
     @CrossOrigin
@@ -148,8 +152,33 @@ public class DataController {
     }
 
     @GetMapping("/topicsFrequency")
+    @CrossOrigin
     public Map<String, List<Object>> topicsFrequency(@RequestParam(value = "limit", required = false) Integer limit){
         return getData.getTopicsFrequency(limit);
+    }
+
+    @GetMapping("/{repos_name}/issues")
+    @CrossOrigin
+    public List<Issue> getIssues(@PathVariable(value = "repos_name")@NotNull String repos_name,
+                                 @RequestParam(value = "state",required = false)@Nullable String state,
+                                 @RequestParam(value = "earliest",required = false)@Nullable String earliest){
+        return issueRepository.getIssues(
+                repos_name,
+                (state==null||state.equals("all"))? "" : state,
+                earliest==null? "" : earliest);
+    }
+
+    @GetMapping("/{repos_name}/issues_num")
+    @CrossOrigin
+    public Map<String, Integer> getReposIssuesNum(@PathVariable(value = "repos_name")@NotNull String repos_name){
+        Map<String, Integer> msi = getData.getIssuesNum(repos_name);
+        if(!msi.containsKey("open")){
+            msi.put("open",0);
+        }
+        if(!msi.containsKey("closed")){
+            msi.put("closed",0);
+        }
+        return msi;
     }
 
     @RequestMapping("/download/{filetype}/{filename}")

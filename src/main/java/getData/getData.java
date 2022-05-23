@@ -7,34 +7,36 @@ import java.sql.*;
 import com.alibaba.fastjson.*;
 import org.jsoup.Jsoup;
 
+import javax.validation.constraints.NotNull;
+
 public class getData {
-    private static Map<String, String> headers;
+    private static Map<String, String> headers = new HashMap<>();
     private static final String url = "jdbc:postgresql://localhost:5432/spring_project";
     private static final String user = "postgres";
     private static final String password = "Xing011006";
 
-//    static {
-//        try{
-//            File file = new File("D:/AAAAA/2022spring/Software Engineer/myGithubToken.txt");
-//            FileReader fr = new FileReader(file);
-//            BufferedReader br = new BufferedReader(fr);
-//            String token;
-//            token = br.readLine();
-//            br.close();
-//            fr.close();
-//            if(token!=null&&token.length()==40){
-//                System.out.println("Token read!");
-//                headers = new HashMap<>();
-//                headers.put("Authorization","token "+ token);
-//            }
-//            else{
-//                System.out.println("Token is empty!");
-//            }
-//        }
-//        catch (Exception e){
-//            e.printStackTrace();
-//        }
-//    }
+    static {
+        try{
+            File file = new File("D:/AAAAA/2022spring/Software Engineer/myGithubToken.txt");
+            FileReader fr = new FileReader(file);
+            BufferedReader br = new BufferedReader(fr);
+            String token;
+            token = br.readLine();
+            br.close();
+            fr.close();
+            if(token!=null&&token.length()==40){
+                System.out.println("Token read!");
+                headers = new HashMap<>();
+                headers.put("Authorization","token "+ token);
+            }
+            else{
+                System.out.println("Token is empty!");
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
     public static void getReposData(){
         String language = "java";
@@ -239,6 +241,30 @@ public class getData {
             }
             msi.put("topic", ls);
             msi.put("frequency", li);
+            stmt.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return msi;
+    }
+
+    public static Map<String, Integer> getIssuesNum(@NotNull String repos_name){
+        Map<String, Integer> msi = new HashMap<>();
+        String query = String.format("select i.state,count(i.state) from issue i left join github_repos_info gri on gri.id = i.repos_id" +
+                " where gri.name = '%s'" +
+                " group by i.state;",repos_name);
+        try{
+            Connection conn = null;
+            Statement stmt = null;
+            conn = DriverManager.getConnection(url,user,password);
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while(rs.next()){
+                msi.put(rs.getString(1),rs.getInt(2));
+            }
+            stmt.close();
+            conn.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
