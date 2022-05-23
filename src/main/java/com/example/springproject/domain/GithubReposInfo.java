@@ -89,5 +89,4 @@ public class GithubReposInfo {
     public void setOpen_issues(int open_issues) {
         this.open_issues = open_issues;
     }
-//    private String
 }
