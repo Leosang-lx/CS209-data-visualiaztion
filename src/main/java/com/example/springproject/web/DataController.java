@@ -292,7 +292,7 @@ public class DataController {
 
     @GetMapping("/{repos_name}/labels_freq")
     @CrossOrigin
-    public Map<String, List<Object>> getReposLabelFreq(@PathVariable(value = "repos_name")@NotNull String repos_name){
+    public List<Map<String, Object>> getReposLabelFreq(@PathVariable(value = "repos_name")@NotNull String repos_name){
         return GetData.getLabelFrequency(repos_name);
     }
 

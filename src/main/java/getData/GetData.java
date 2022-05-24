@@ -381,8 +381,8 @@ public class GetData {
         return ans;
     }
 
-    public static Map<String, List<Object>> getLabelFrequency(String repos_name){
-        Map<String, List<Object>> msl = new HashMap<>();
+    public static List<Map<String, Object>> getLabelFrequency(String repos_name){
+        List<Map<String, Object>> lmso = new ArrayList<>();
         String query = String.format("select il.label,count(*) from issue_label il left join issue i on il.issue_id = i.id" +
                 " where i.repos_id = (select id from github_repos_info where name = '%s')" +
                 " group by il.label;",repos_name);
@@ -392,20 +392,18 @@ public class GetData {
             conn = DriverManager.getConnection(url,user,password);
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
-            List<Object> labels = new ArrayList<>();
-            List<Object> freq = new ArrayList<>();
             while(rs.next()){
-                labels.add(rs.getString(1));
-                freq.add(rs.getInt(2));
+                Map<String, Object> mso = new HashMap<>();
+                mso.put("name",rs.getString(1));
+                mso.put("value",rs.getInt(2));
+                lmso.add(mso);
             }
-            msl.put("labels",labels);
-            msl.put("freq",freq);
             stmt.close();
             conn.close();
     } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        return msl;
+        return lmso;
     }
     public static void main(String[] args) throws Exception{
         Class.forName("org.postgresql.Driver");
