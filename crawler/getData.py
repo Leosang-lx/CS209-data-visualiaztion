@@ -11,7 +11,7 @@ token = file.readline()
 file.close()
 # print(token)
 
-headers={"Authorization":token,"Accept":"application/vnd.github.v3+json"}
+headers={"Authorization":'token '+ token,"Accept":"application/vnd.github.v3+json"}
 time = datetime.datetime.now()
 deltaTime = datetime.timedelta(days=30)
 # print(time.strftime('%Y-%m-%dT%H:%M:%SZ'))
@@ -21,10 +21,10 @@ since = (time-deltaTime).strftime('%Y-%m-%dT%H:%M:%SZ')
 # print(a<b)
 
 def getReposData():  
-    language = 'java'
+    language = 'python'
     url = 'https://api.github.com/search/repositories?q=language:{}&sort=stars&page=1&per_page=100'.format(language)
     sql = "insert into github_repos_info values ({},'{}','{}','{}','{}','{}',{},{},{},{});"
-    r = requests.get(url)
+    r = requests.get(url,headers=headers)
     if r.status_code==200:
         items = r.json()['items']
         for i in items:
@@ -44,11 +44,12 @@ def getReposData():
         print(r.status_code)
 
 def getReposIssues():
-    language = 'java'
+    language = 'python'
     url = 'https://api.github.com/repos/{}/issues?state=all&since={}&page={}&per_page={}'
     select_template = "select id,full_name from github_repos_info where language='{}';".format(language) # select all repos and find issues
     # (id, html_url, number, state, created_at, updated_at, closed_at)
-    insert_template = "insert into issue values({}, {}, {}, '{}', '{}', '{}', '{}');"
+    insert_template = "insert into issue values({}, {}, {}, '{}', '{}', '{}', '{}',{});"
+    insert_label = "insert into issue_label values ({},'{}');"
     try:
         curr.execute(select_template)
     except Exception as e:
@@ -66,18 +67,34 @@ def getReposIssues():
             print(full_name,page)
             page+=1
             r = requests.get(searchIssue, headers=headers)
+            # print(r.content)
+            # break
             if r.status_code==200:
                 for issue in r.json():
-                    insert = insert_template.format(issue['id'],reposId,issue['number'],issue['state'],issue['created_at'],issue['updated_at'],issue['closed_at'])
+                    issue_id = issue['id']
+                    if len(issue['labels'])>0:
+                        labeled = 'true'
+                    else:
+                        labeled = 'false'
+                    insert = insert_template.format(issue['id'],reposId,issue['number'],issue['state'],issue['created_at'],issue['updated_at'],issue['closed_at'],labeled)
                     curr.execute(insert)
+                    if labeled:
+                        for label in issue['labels']:
+                            name = label['name']
+                            while "'" in name:
+                                idx = name.index('\'')
+                                name = name[:idx]+name[idx+1:]
+                            curr.execute(insert_label.format(issue_id,name))
+                    
             else:
                 print(r.status_code)
             if len(r.json())<100:
                 break
 
 def getIssueEvents():
+    language = 'python'
     url = 'https://api.github.com/repos/{}/issues/events?page={}&per_page={}'
-    select_template = 'select id,full_name from github_repos_info;' # select all repos and find issues
+    select_template = "select id,full_name from github_repos_info where language = '{}';".format(language) # select all repos and find issues
     # (id, html_url, number, state, created_at, updated_at, closed_at)
     insert_template = "insert into issue_event values({},{},{},'{}','{}');"
     try:
@@ -105,18 +122,19 @@ def getIssueEvents():
                         before = True
                         break
                     insert = insert_template.format(event['id'],event['issue']['id'],reposId,event['event'],event['created_at'])
-                    # try:
-                    curr.execute(insert)
-                    # except Exception as e:
-                    #     print(e)
+                    try:
+                        curr.execute(insert)
+                    except Exception as e:
+                        print(e)
             else:
                 print(r.status_code)
             if before:
                 break
 
 def getReposTopics():
+    language = 'python'
     url = 'https://api.github.com/repos/{}/topics'
-    select_template = 'select id,full_name from github_repos_info;' # select all repos and find issues
+    select_template = "select id,full_name from github_repos_info  where language = '{}';".format(language) # select all repos and find issues
     # (id, html_url, number, state, created_at, updated_at, closed_at)
     insert_template = "insert into repos_topics values({},'{}');"
     try:
@@ -138,14 +156,14 @@ def getReposTopics():
         else:
             print(r.status_code)
 
-def getReposLabels():
-    url = 'https://api.github.com/search/labels?repository_id=22790488&&page=1&per_page=100'
+# def getReposLabels():
+#     url = 'https://api.github.com/search/labels?repository_id=22790488&&page=1&per_page=100'
 
 conn = psycopg2.connect(database="spring_project", user="postgres", password="Xing011006", host="127.0.0.1", port="5432")
 curr = conn.cursor()
-# getReposData
+# getReposData()
 # getReposIssues()
-# getIssueEvents()
+getIssueEvents()
 # getReposTopics()
 
 curr.close()

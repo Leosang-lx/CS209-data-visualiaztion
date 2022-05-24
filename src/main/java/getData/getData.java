@@ -7,9 +7,7 @@ import java.sql.*;
 import com.alibaba.fastjson.*;
 import com.example.springproject.domain.GithubReposInfo;
 import com.example.springproject.domain.UserEvent;
-import org.apache.catalina.User;
 import org.jsoup.Jsoup;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.validation.constraints.NotNull;
 
@@ -267,6 +265,10 @@ public class getData {
             while(rs.next()){
                 msi.put(rs.getString(1),rs.getInt(2));
             }
+            rs = stmt.executeQuery(String.format("select i.labeled, count(i.*) from issue i left join github_repos_info gri on gri.id = i.repos_id where gri.name = '%s' group by i.labeled;",repos_name));
+            while(rs.next()){
+                msi.put(rs.getString(1),rs.getInt(2));
+            }
             rs = stmt.executeQuery(String.format("select avg(date_part('day',cast(to_date(substr(i.closed_at,1,10), 'YYYY-MM-DD') as TIMESTAMP) - cast(to_date(substr(i.created_at,1,10), 'YYYY-MM-DD') as TIMESTAMP))) from issue i left join github_repos_info gri on gri.id = i.repos_id where state = 'closed' and gri.name = '%s';",repos_name));
             rs.next();
             msi.put("avg_closed_time",rs.getDouble(1));
@@ -318,9 +320,9 @@ public class getData {
         List<UserEvent> lue = new ArrayList<>();
         int page = 1;
         String template = "https://api.github.com/users/%s/events?page=%d&per_page=100";
-        boolean after = true;
+        boolean contin = true;
         try {
-            while(after){
+            while(contin){
                 String url = String.format(template,username,page++);
                 org.jsoup.Connection.Response res = Jsoup.connect(url)
                         .ignoreContentType(true)
@@ -333,7 +335,7 @@ public class getData {
                         JSONObject jo = ja.getJSONObject(i);
                         String date = jo.getString("created_at");
                         if(date.substring(0,10).compareTo(from)<0){
-                            after = false;
+                            contin = false;
                             break;
                         }
                         UserEvent ue = new UserEvent();
@@ -344,11 +346,16 @@ public class getData {
                         ue.setCreated_at(jo.getString("created_at"));
                         lue.add(ue);
                     }
+                    if(len<100){
+                        contin = false;
+                    }
+                }
+                else{
+                    System.out.println(res.statusCode());
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return new ArrayList<>();
         }
         return lue;
     }

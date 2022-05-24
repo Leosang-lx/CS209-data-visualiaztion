@@ -13,6 +13,7 @@ public class Issue {
     private String created_at;
     private String updated_at;
     private String closed_at;
+    private boolean labeled;
 
     public int getId() {
         return id;
@@ -68,5 +69,13 @@ public class Issue {
 
     public void setClosed_at(String closed_at) {
         this.closed_at = closed_at;
+    }
+
+    public boolean isLabeled() {
+        return labeled;
+    }
+
+    public void setLabeled(boolean labeled) {
+        this.labeled = labeled;
     }
 }

@@ -152,6 +152,79 @@ public class DataController {
         return msl;
     }
 
+    @GetMapping("/userEvents")
+    @CrossOrigin
+    public Map<String, List<Object>> getUserEvents(
+            @RequestParam(value="username") String username,
+            @RequestParam(value="begin",required = false)@Nullable String begin,
+            @RequestParam(value="end", required = false)@Nullable String end,
+            @RequestParam(value="events",required = false)@Nullable String events
+    ){
+        LocalDate before;
+        LocalDate last;
+        if(end==null){
+            if(begin!=null){
+                before = LocalDate.parse(begin);
+                last = before.plusDays(30);
+            }
+            else{
+                last = LocalDate.now();
+                before = last.minusDays(30);
+            }
+        }
+        else{
+            last = LocalDate.parse(end);
+            if(begin==null){
+                before = last.minusDays(30);
+            }
+            else{
+                before = LocalDate.parse(begin);
+            }
+        }
+        List<UserEvent> lie = getData.getUserEvents(
+                username,
+                before.toString()
+//                end!=null?end:"",
+//                events!=null?events:""
+        );
+
+        HashMap<String, Integer> msi = new HashMap<>();
+        for(UserEvent ie:lie){
+            String date = ie.getCreated_at().substring(0,10);
+            if(msi.containsKey(date)){
+                msi.put(date, msi.get(date)+1);
+            }
+            else{
+                msi.put(date,1);
+            }
+        }
+        List<Object> dates = new ArrayList<>();
+        List<Object> nums = new ArrayList<>();
+        dates.add(before.toString());
+        Integer num = msi.get(before.toString());
+        nums.add(Objects.requireNonNullElse(num, 0));
+        int cnt = 1;
+        while(true){
+            LocalDate date = before.plusDays(cnt++);
+            if(date.compareTo(last)<=0){
+                String s = date.toString();
+                dates.add(s);
+                num = msi.get(s);
+                if(num==null){
+                    num = 0;
+                }
+                nums.add(num);
+            }
+            else{
+                break;
+            }
+        }
+        Map<String, List<Object>> msl = new HashMap<>();
+        msl.put("dates",dates);
+        msl.put("nums",nums);
+        return msl;
+    }
+
     @GetMapping("/topicsFrequency")
     @CrossOrigin
     public Map<String, List<Object>> topicsFrequency(@RequestParam(value = "limit", required = false) Integer limit){
@@ -173,6 +246,12 @@ public class DataController {
     @CrossOrigin
     public Map<String, Object> getReposIssuesNum(@PathVariable(value = "repos_name")@NotNull String repos_name){
         Map<String, Object> msi = getData.analyseIssues(repos_name);
+        if(!msi.containsKey("t")){
+            msi.put("t",0);
+        }
+        if(!msi.containsKey("f")){
+            msi.put("f",0);
+        }
         if(!msi.containsKey("open")){
             msi.put("open",0);
         }
