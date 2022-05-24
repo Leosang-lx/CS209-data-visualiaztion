@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 public interface GithubReposInfoRepository extends JpaRepository<GithubReposInfo, Integer>{
-//    @Query("select r from GithubReposInfo r where r.language = ?1")
-//    List<GithubReposInfo> getGithubReposInfosByLanguage(String lanuage);
     @Query(
             value = "select * from github_repos_info where case when (?1<>'') then language=?1 else 1=1 end" +
             " and case when (?2<>-1) then stars>=?2 else 1=1 end" +

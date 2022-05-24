@@ -235,7 +235,8 @@ public class DataController {
     @CrossOrigin
     public List<Issue> getIssues(@PathVariable(value = "repos_name")@NotNull String repos_name,
                                  @RequestParam(value = "state",required = false)@Nullable String state,
-                                 @RequestParam(value = "earliest",required = false)@Nullable String earliest){
+                                 @RequestParam(value = "earliest",required = false)@Nullable String earliest
+    ){
         return issueRepository.getIssues(
                 repos_name,
                 (state==null||state.equals("all"))? "" : state,
@@ -281,12 +282,26 @@ public class DataController {
         return GetData.getUserEvents(username,since);
     }
 
+    @GetMapping("/repos_labels/{repos_name}")
+    @CrossOrigin
+    public Map<String, List<String>> getLabelsOfRepos(@PathVariable(value = "repos_name")@NotNull String repos_name){
+        Map<String, List<String>> msl = new HashMap<>();
+        msl.put("labels",GetData.getRecentReposLabels(repos_name));
+        return msl;
+    }
+
+    @GetMapping("/{repos_name}/labels_freq")
+    @CrossOrigin
+    public Map<String, List<Object>> getReposLabelFreq(@PathVariable(value = "repos_name")@NotNull String repos_name){
+        return GetData.getLabelFrequency(repos_name);
+    }
+
     @RequestMapping("/download/{filetype}/{filename}")
     @CrossOrigin
     public String downloadFiles(
             @PathVariable("filetype") String filetype,
             @PathVariable("filename") String filename,
-            HttpServletResponse response) throws Exception{
+            HttpServletResponse response) {
         String path = "D:\\AAAAA\\2022spring\\Java2\\project\\CS209-data-visualiaztion\\src\\main\\resources\\static\\%s\\%s";
         File file = new File(String.format(path,filetype,filename));
         if (file.exists()) {

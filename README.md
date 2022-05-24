@@ -6,13 +6,15 @@
 
 [TOC]
 
+Source can be seen in repository [CS209-data-visualization](https://github.com/Leosang-lx/CS209-data-visualiaztion).
+
 ## Topic
 
-When people are new to make contributions to open source projects, it is always a problem to choose a proper project to start. This project aims to help people analyse the open source projects in `github.com` and get a clear insight of famous open source projects. With several given filter conditions, you can get a list of repositories and do further analysis on the activation of the repository about the issue and issue events. Results including the frequency distribution of the issue events, and number analysis of the open/closed issues, the average closed time of the issues in a repository and so on. Besides, you can also do queries about recent events of a certain user to evaluate the activation of the user.
+When people are new to make contributions to open source projects, it is always a problem to choose a proper project to start. This project aims to help people analyze the open source projects in `github.com` and get a clear insight of famous open source projects. With several given filter conditions, you can get a list of repositories and do further analysis on the activation of the repository about the issue and issue events. Results including the frequency distribution of the issue events, and number analysis of the open/closed issues, the average closed time of the issues in a repository and so on. Besides, you can also do queries about recent events of a certain user to evaluate the activation of the user.
 
 ## Architecture Design
 
-The architecture of this project mainly consists of two parts, front-end and back-end.
+The architecture of this project mainly consists of two parts, with the front-end to accept data, show the visualization result and the back_end to process the data and respond to the request of the front-end.
 
 ### Data Collection
 
@@ -22,7 +24,7 @@ The data are accessed by `github.api` and using `jsoup`. With provided github AP
 
 ![database](./database.jpg)
 
-The database has five tables with the above dependency relationships. And the columns in tables are only part of the data that we want to analyse from `api.github.com`. And the scale of the data can is shown below:
+The database has five tables with the above dependency relationships. And the columns in tables are only part of the data that we want to analyze from `api.github.com`. While we didn't take much data for repository, since it cost a lot to collect the relevant data of issues. And the scale of the data can is shown below:
 
 | Table     | github_repos_info | issue  | issue_event | repos_topic | issue_label |
 | --------- | ----------------- | ------ | ----------- | ----------- | ----------- |
@@ -37,8 +39,6 @@ While the front-end part is mainly for data visualization. And the source code o
 (Front-end)
 
 ### Back-end
-
-
 
 The back-end part consists of database and server using `springboot` as the framework. The database has already stored necessary data. The server will map different URLs to responses including pages in `html`, data in `json` and files in `javascript`. Therefore, it can process the request from the front-end. The data is stored in database and each time when there is a request from the front-end, server will execute corresponding `sql` sentences in database and translate the data to the front-end. All data transported from the front-end to the back-end is in `json` format.
 

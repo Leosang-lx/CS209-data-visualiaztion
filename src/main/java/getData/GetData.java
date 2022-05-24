@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.sql.*;
 
+import ch.qos.logback.core.encoder.EchoEncoder;
 import com.alibaba.fastjson.*;
 import com.example.springproject.domain.GithubReposInfo;
 import com.example.springproject.domain.UserEvent;
@@ -360,6 +361,53 @@ public class GetData {
         return lue;
     }
 
+    public static List<String> getRecentReposLabels(String repos_name){
+        List<String> ans = new ArrayList<>();
+        String query = String.format("select distinct il.label from issue_label il left join issue i on il.issue_id = i.id" +
+                " where i.repos_id = (select id from github_repos_info where name = '%s');",repos_name);
+        try{
+            Connection conn = null;
+            Statement stmt = null;
+            conn = DriverManager.getConnection(url,user,password);
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while(rs.next()){
+                ans.add(rs.getString(1));
+            }
+            stmt.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ans;
+    }
+
+    public static Map<String, List<Object>> getLabelFrequency(String repos_name){
+        Map<String, List<Object>> msl = new HashMap<>();
+        String query = String.format("select il.label,count(*) from issue_label il left join issue i on il.issue_id = i.id" +
+                " where i.repos_id = (select id from github_repos_info where name = '%s')" +
+                " group by il.label;",repos_name);
+        try{
+            Connection conn = null;
+            Statement stmt = null;
+            conn = DriverManager.getConnection(url,user,password);
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            List<Object> labels = new ArrayList<>();
+            List<Object> freq = new ArrayList<>();
+            while(rs.next()){
+                labels.add(rs.getString(1));
+                freq.add(rs.getInt(2));
+            }
+            msl.put("labels",labels);
+            msl.put("freq",freq);
+            stmt.close();
+            conn.close();
+    } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return msl;
+    }
     public static void main(String[] args) throws Exception{
         Class.forName("org.postgresql.Driver");
         getReposData();
