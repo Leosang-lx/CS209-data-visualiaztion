@@ -65,7 +65,7 @@ public class DataController {
                     least_stars!=null?least_stars:-1,
                     since!=null?since:"",
                     open_issues!=null?open_issues:-1,
-                    limit!=null?limit:30);
+                    limit!=null?limit:20);
         }
         else{
             return githubReposInfoRepository.getGithubReposInfosWithTopic(
@@ -74,7 +74,7 @@ public class DataController {
                     since!=null?since:"",
                     open_issues!=null?open_issues:-1,
                     topic,
-                    limit!=null?limit:30
+                    limit!=null?limit:20
             );
         }
     }
@@ -83,7 +83,7 @@ public class DataController {
     @CrossOrigin
     public Map<String, List<Object>> getIssueEvents(
             @RequestParam(value="repos_name") String repos_name,
-            @RequestParam(value="begin",required = false)@Nullable String begin,
+            @RequestParam(value="begin",required = false)@Nullable String begin,//date
             @RequestParam(value="end", required = false)@Nullable String end,
             @RequestParam(value="events",required = false)@Nullable String events
     ){
@@ -231,9 +231,9 @@ public class DataController {
         return GetData.getTopicsFrequency(limit);
     }
 
-    @GetMapping("/{repos_name}/issues")
+    @GetMapping("/issues")
     @CrossOrigin
-    public List<Issue> getIssues(@PathVariable(value = "repos_name")@NotNull String repos_name,
+    public List<Issue> getIssues(@RequestParam(value = "repos_name")@NotNull String repos_name,
                                  @RequestParam(value = "state",required = false)@Nullable String state,
                                  @RequestParam(value = "earliest",required = false)@Nullable String earliest
     ){
@@ -243,9 +243,9 @@ public class DataController {
                 earliest==null? "" : earliest);
     }
 
-    @GetMapping("/{repos_name}/issues_num")
+    @GetMapping("/issues_num")
     @CrossOrigin
-    public Map<String, Object> getReposIssuesNum(@PathVariable(value = "repos_name")@NotNull String repos_name){
+    public Map<String, Object> getReposIssuesNum(@RequestParam(value = "repos_name")@NotNull String repos_name){
         Map<String, Object> msi = GetData.analyseIssues(repos_name);
         if(!msi.containsKey("t")){
             msi.put("t",0);
@@ -282,17 +282,17 @@ public class DataController {
         return GetData.getUserEvents(username,since);
     }
 
-    @GetMapping("/{repos_name}/repos_labels")
+    @GetMapping("/repos_labels")
     @CrossOrigin
-    public Map<String, List<String>> getLabelsOfRepos(@PathVariable(value = "repos_name")@NotNull String repos_name){
+    public Map<String, List<String>> getLabelsOfRepos(@RequestParam(value = "repos_name")@NotNull String repos_name){
         Map<String, List<String>> msl = new HashMap<>();
         msl.put("labels",GetData.getRecentReposLabels(repos_name));
         return msl;
     }
 
-    @GetMapping("/{repos_name}/labels_freq")
+    @GetMapping("/labels_freq")
     @CrossOrigin
-    public List<Map<String, Object>> getReposLabelFreq(@PathVariable(value = "repos_name")@NotNull String repos_name){
+    public List<Map<String, Object>> getReposLabelFreq(@RequestParam(value = "repos_name")@NotNull String repos_name){
         return GetData.getLabelFrequency(repos_name);
     }
 

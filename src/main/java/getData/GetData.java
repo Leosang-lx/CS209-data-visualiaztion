@@ -253,7 +253,7 @@ public class GetData {
     public static Map<String, Object> analyseIssues(@NotNull String repos_name){
         Map<String, Object> msi = new HashMap<>();
         String query = String.format("select i.state,count(i.state) from issue i left join github_repos_info gri on gri.id = i.repos_id" +
-                " where gri.name = '%s'" +
+                " where gri.full_name = '%s'" +
                 " group by i.state;",repos_name);
         try{
             Connection conn = null;
@@ -264,11 +264,11 @@ public class GetData {
             while(rs.next()){
                 msi.put(rs.getString(1),rs.getInt(2));
             }
-            rs = stmt.executeQuery(String.format("select i.labeled, count(i.*) from issue i left join github_repos_info gri on gri.id = i.repos_id where gri.name = '%s' group by i.labeled;",repos_name));
+            rs = stmt.executeQuery(String.format("select i.labeled, count(i.*) from issue i left join github_repos_info gri on gri.id = i.repos_id where gri.full_name = '%s' group by i.labeled;",repos_name));
             while(rs.next()){
                 msi.put(rs.getString(1),rs.getInt(2));
             }
-            rs = stmt.executeQuery(String.format("select avg(date_part('day',cast(to_date(substr(i.closed_at,1,10), 'YYYY-MM-DD') as TIMESTAMP) - cast(to_date(substr(i.created_at,1,10), 'YYYY-MM-DD') as TIMESTAMP))) from issue i left join github_repos_info gri on gri.id = i.repos_id where state = 'closed' and gri.name = '%s';",repos_name));
+            rs = stmt.executeQuery(String.format("select avg(date_part('day',cast(to_date(substr(i.closed_at,1,10), 'YYYY-MM-DD') as TIMESTAMP) - cast(to_date(substr(i.created_at,1,10), 'YYYY-MM-DD') as TIMESTAMP))) from issue i left join github_repos_info gri on gri.id = i.repos_id where state = 'closed' and gri.full_name = '%s';",repos_name));
             rs.next();
             msi.put("avg_closed_time",rs.getDouble(1));
             stmt.close();
@@ -384,7 +384,7 @@ public class GetData {
     public static List<Map<String, Object>> getLabelFrequency(String repos_name){
         List<Map<String, Object>> lmso = new ArrayList<>();
         String query = String.format("select il.label,count(*) from issue_label il left join issue i on il.issue_id = i.id" +
-                " where i.repos_id = (select id from github_repos_info where name = '%s')" +
+                " where i.repos_id = (select id from github_repos_info where full_name = '%s')" +
                 " group by il.label;",repos_name);
         try{
             Connection conn = null;

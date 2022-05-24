@@ -7,11 +7,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class PageTransport {
-
+    @Deprecated
     @GetMapping("/repository")
     public String repository(){
         return "Repository";
     }
+    @Deprecated
     @GetMapping("/event")
     public String event(){
         return "Event";
@@ -24,5 +25,4 @@ public class PageTransport {
     public String homepage(){
         return "redirect:/index";
     }
-//    @PostMapping()
 }
