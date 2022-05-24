@@ -1,9 +1,9 @@
 package com.example.springproject.web;
 
+import getData.getData;
 import com.example.springproject.api.IssueRepository;
 import com.example.springproject.domain.Issue;
 import com.example.springproject.domain.UserEvent;
-import getData.getData;
 import com.example.springproject.api.GithubReposInfoRepository;
 import com.example.springproject.api.IssueEventRepository;
 import com.example.springproject.domain.GithubReposInfo;
@@ -269,7 +269,7 @@ public class DataController {
         return getData.getUserRepos(username, limit==null||limit<=0||limit>100? 30:limit);
     }
 
-        @GetMapping("/{username}/userevents")
+    @GetMapping("/{username}/userevents")
     @CrossOrigin
     public List<UserEvent> getUserEvents(
             @PathVariable(value = "username")@NotNull String username,
