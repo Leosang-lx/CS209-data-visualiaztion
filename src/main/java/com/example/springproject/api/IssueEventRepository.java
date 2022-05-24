@@ -12,7 +12,7 @@ public interface IssueEventRepository extends JpaRepository<IssueEvent, Long> {
             value = "select ie.* from" +
                     " issue_event ie left join github_repos_info gri" +
                     " on gri.id = ie.repos_id" +
-                    " where gri.name = ?1" +
+                    " where gri.full_name = ?1" +
                     " and case when (?2<>'') then substr(ie.created_at,1,10) >= ?2 else 1=1 end" +
                     " and case when (?3<>'') then substr(ie.created_at,1,10) <= ?3 else 1=1 end" +
                     " and case when (?4<>'') then ie.event in (select * from regexp_split_to_table(?4,',')) else 1=1 end;", nativeQuery = true

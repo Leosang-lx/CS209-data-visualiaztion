@@ -16,9 +16,13 @@ public class PageTransport {
     public String event(){
         return "Event";
     }
+    @GetMapping("/index")
+    public String index(){
+        return "New";
+    }
     @GetMapping()
     public String homepage(){
-        return "redirect:/repository";
+        return "redirect:/index";
     }
 //    @PostMapping()
 }

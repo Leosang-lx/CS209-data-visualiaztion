@@ -48,6 +48,10 @@ Important classes including `getData.java`, `DataController.java`, `PageControll
 
 ### GetData.java
 
+```
+src/main/java/getData/GetData.java
+```
+
 The functions defined in `GetData.java` are mainly used to crawl data from `api.github.com` and store it to database. Also, some data about the user events are directly accessed from the `api.github.com` and sent back to the front-end.
 
 `GetData.java` has static field to store the critical information to access the `api.github.com` and database, like the access token of Github, URL, user and password of database.
@@ -76,6 +80,10 @@ public static List<UserEvent> getUserEvents(){...}
 ```
 
 ### DataController.java
+
+```
+src/main/java/getData/GetData.java
+```
 
 This class is about the mapping of requests from the front-end. Return corresponding data response according to the URL. All APIs defined in this class will only transport data to the front-end. With the `springboot` framework, the return value of the functions defined in this controller class (RestController) will transformed to data in `json` format automatically.
 
