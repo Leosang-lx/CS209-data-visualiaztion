@@ -1,8 +1,8 @@
 # CS209A Project Report
 
-**11912113 Xing Liu**
+**11912113 Xing Liu: back-end**
 
-**1191 Tong Liu**
+**11910421 Tong Liu: front-end**
 
 [TOC]
 
@@ -34,9 +34,47 @@ The database has five tables with the above dependency relationships. And the co
 
 ### Front-end
 
+#### Design Idea
+
+All the operations happened in one html file and with css and javascript. The main idea of changing elements is that adding template element with parameters and delete all the childnode of the special marked element. This makes it easier to manage the website but takes some problems such as cannot find special node or repeated element. In this project I design a great many functions to make sure running safely.
+
+To conveniently use repositories you searched in following searching, I design the tag function to save or delete repository' s name. The important field is currentName and repositoryList, which store the name and highlight current selected. The highlighed repository will guide to the keyword of other searching if you don' t fill the neccessary attribute when searching.
+
 While the front-end part is mainly for data visualization. And the source code of `html` page and the collected data (in `json`) is accessed by sending request to the back-end part.
 
-(Front-end)
+#### Exhibition
+
+The initial page is shown as follows:
+
+![initial_page](./pictures/initial.png)
+
+The left side bar is a menu used to choose the viewing content, the search icon on the upper right of the page is the search form with filter parameters. And the hidden menu is shown below:
+
+![menu](./pictures/menu.png)
+
+User can first click "Topic" to show the words cloud picture of the popular topics of famous repositories. And  the topic can be used to filter repositories in the next step.
+
+![words cloud](./pictures/wordCloud.png)
+
+After submit the filter conditions in Repository page, it will show you the results of repositories meeting the filtering conditions as many labels with the name of the repository's full name, on the top of the page, then a table filled with the data of stars, forks and watchers of repositories will be placed below.
+
+![repositories](./pictures/repository.png)
+
+The labels of repositories are selectable and closable. If a certain label of repository is selected, the following analyses will focus on this repository. 
+
+After click tab "Issue", it will show some statistics results on the recent issues of the selected repository.
+
+![issue](./pictures/issues.png)
+
+And if you click "Events", a table showing the frequency distribution of recent issue events of the selected repository will appear.
+
+If you click "Label", it will show you the table will labels and corresponding issues number.
+
+![label](./pictures/labels.png)
+
+Finally, is the statistic of the events of a certain users, it will show the frequency distribution of user events.
+
+![user](./pictures/user.png)
 
 ### Back-end
 
@@ -54,7 +92,20 @@ src/main/java/getData/GetData.java
 
 The functions defined in `GetData.java` are mainly used to crawl data from `api.github.com` and store it to database. Also, some data about the user events are directly accessed from the `api.github.com` and sent back to the front-end.
 
-`GetData.java` has static field to store the critical information to access the `api.github.com` and database, like the access token of Github, URL, user and password of database.
+#### Fields
+
+```java
+private static Map<String, String> headers = new HashMap<>();
+private static final String url = "jdbc:postgresql://localhost:*/*";
+private static final String user = "*";
+private static final String password = "*";
+```
+
+In `GetData.java`, it has filed `headers` designed in Map to store the Github access token of my account, which help us to access the Github API more frequently when sending requests.
+
+And the following `url`, `user`, `password` are used to access the database.
+
+#### Methods
 
 The functions to crawl data from Github API about repositories, repository topics, issues and issue events and store it to database are shown below:
 
@@ -87,9 +138,11 @@ src/main/java/com/example/springproject/web/DataController.java
 
 This class is about the mapping of requests to query data. Return corresponding data response according to the URL. All APIs defined in this class will only transport data to the front-end. With the `springboot` framework, the return value of the functions defined in this controller class (RestController) will transformed to data in `json` format automatically.
 
+#### Methods
+
 The following contents are some important APIs (not all) provided in the back-end.
 
-#### getGithubRepos
+##### getGithubRepos
 
 This API is used to get github repositories data from the database with some filter conditions.
 
@@ -101,7 +154,7 @@ Result:
 [{"id":132464395,"full_name":"Snailclimb/JavaGuide","html_url":"https://github.com/Snailclimb/JavaGuide","language":"java","created_at":"2018-05-07T13:27:00Z","stars":121609,"forks":41264,"watch":121609,"open_issues":67}]
 ```
 
-#### getIssueEvents
+##### getIssueEvents
 
 This API is used to return the frequency distribution of issue events on dates of a certain repository. 
 
@@ -111,7 +164,7 @@ Example: `localhost:****/issueEvents?repos_name=/JavaGuide`
 {"dates":["2022-04-24","2022-04-25","2022-04-26","2022-04-27","2022-04-28","2022-04-29","2022-04-30","2022-05-01","2022-05-02","2022-05-03","2022-05-04","2022-05-05","2022-05-06","2022-05-07","2022-05-08","2022-05-09","2022-05-10","2022-05-11","2022-05-12","2022-05-13","2022-05-14","2022-05-15","2022-05-16","2022-05-17","2022-05-18","2022-05-19","2022-05-20","2022-05-21","2022-05-22","2022-05-23","2022-05-24"],"nums":[0,8,4,2,7,0,0,2,1,2,0,0,7,0,3,0,0,2,3,0,0,6,0,0,2,4,4,5,0,0,0]}
 ```
 
-#### getUserEvents
+##### getUserEvents
 
 This API is used to return the recent user events of a certain user.
 
@@ -121,7 +174,7 @@ Example: `localhost:****/Leosang-lx/userEvents`
 {"dates":["2022-04-24","2022-04-25","2022-04-26","2022-04-27","2022-04-28","2022-04-29","2022-04-30","2022-05-01","2022-05-02","2022-05-03","2022-05-04","2022-05-05","2022-05-06","2022-05-07","2022-05-08","2022-05-09","2022-05-10","2022-05-11","2022-05-12","2022-05-13","2022-05-14","2022-05-15","2022-05-16","2022-05-17","2022-05-18","2022-05-19","2022-05-20","2022-05-21","2022-05-22","2022-05-23","2022-05-24"],"nums":[0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,3,2,0,1,0,3,15,0,0,0,0,0,0,21,9,7]}
 ```
 
-#### topicsFrequency
+##### topicsFrequency
 
 This API is used to return the frequency distribution of repository labels in database.
 
@@ -131,7 +184,7 @@ Example: `localhost:****/topicsFrequency?limit=10`
 [{"name":"python","value":47},{"name":"java","value":27},{"name":"android","value":22},{"name":"deep-learning","value":16},{"name":"machine-learning","value":14},{"name":"hacktoberfest","value":10},{"name":"spring-boot","value":9},{"name":"data-science","value":8},{"name":"mybatis","value":8},{"name":"redis","value":8}]
 ```
 
-#### getIssues
+##### getIssues
 
 This API is used to return issues of a certain repository with some filter conditions.
 
@@ -141,7 +194,7 @@ Example: `localhost:****/JavaGuide/issues`
 [{"id":1243708832,"repos_id":132464395,"number":1733,"state":"closedI","created_at":"2022-05-20T21:49:10Z","updated_at":"2022-05-21T05:45:05Z","closed_at":"2022-05-21T03:04:30Z","labeled":true},...]
 ```
 
-#### getReposIssuesNum
+##### getReposIssuesNum
 
 This API is used to return some results of the statistics on issues of a certain repository.
 
@@ -153,7 +206,7 @@ Example: `localhost:****/JavaGuide/issues_num`
 {"t":13,"f":19,"closedI":26,"avg_closed_time":0.0,"openI":6}
 ```
 
-#### getUserRepos
+##### getUserRepos
 
 This API is used to return the repositories list owned by a certain user.
 
@@ -163,7 +216,7 @@ Example: `localhost:****/Leosang-lx/list_repositories`
 [{"id":494948523,"full_name":"Leosang-lx/CS209-data-visualiaztion","html_url":"https://github.com/Leosang-lx/CS209-data-visualiaztion","language":"JavaScript","created_at":"2022-05-22T03:22:33Z","stars":1,"forks":0,"watch":1,"open_issues":0},...]
 ```
 
-#### getUserEvents
+##### getUserEvents
 
 This API is used to return user events of a certain user recently.
 
@@ -173,7 +226,7 @@ Example: `localhost:****/Leosang-lx/userevents`
 [{"id":21952262271,"type":"PushEvent","actor_id":62881345,"repos_id":494948523,"created_at":"2022-05-24T08:57:44Z"},{"id":21950941706,"type":"PushEvent","actor_id":62881345,"repos_id":494948523,"created_at":"2022-05-24T07:52:31Z"},...]
 ```
 
-#### downloadFiles
+##### downloadFiles
 
 This API is used for downloading necessary file mentioned in `html` file, like `jquery.js`.
 
@@ -186,4 +239,19 @@ After going to the above URL (with correct host IP), the browser will download t
 ### PageController.java
 
 This class are mainly for the page direction. To enter the homepage of our project, type `localhost:****` then it will redirect to the homepage `New.html`.
+
+Just a simple function to map a URL to the page.
+
+```java
+@GetMapping("/index")
+public String index(){
+    return "Main";
+}
+@GetMapping()
+public String homepage(){
+    return "redirect:/index";
+}
+```
+
+
 
