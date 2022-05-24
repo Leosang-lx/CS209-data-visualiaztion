@@ -82,26 +82,108 @@ public static List<UserEvent> getUserEvents(){...}
 ### DataController.java
 
 ```
-src/main/java/getData/GetData.java
+src/main/java/com/example/springproject/web/DataController.java
 ```
 
-This class is about the mapping of requests from the front-end. Return corresponding data response according to the URL. All APIs defined in this class will only transport data to the front-end. With the `springboot` framework, the return value of the functions defined in this controller class (RestController) will transformed to data in `json` format automatically.
+This class is about the mapping of requests to query data. Return corresponding data response according to the URL. All APIs defined in this class will only transport data to the front-end. With the `springboot` framework, the return value of the functions defined in this controller class (RestController) will transformed to data in `json` format automatically.
 
-This api is to get github repositories data from the database with some filter conditions.
+The following contents are some important APIs (not all) provided in the back-end.
 
-An example is `localhost:****/filterRepos?language=java&stars=5000&limit=50`
+#### getGithubRepos
+
+This API is used to get github repositories data from the database with some filter conditions.
+
+Example: `localhost:****/filterRepos?language=java&stars=5000&limit=1`
+
+Result:
 
 ```java
-@GetMapping("/filterRepos")
-@CrossOrigin
-public List<GithubReposInfo> getGithubRepos(
-    @RequestParam(value="language", required = false)@Nullable String language,
-    @RequestParam(value="stars", required = false)@Nullable Integer least_stars,
-    @RequestParam(value="since", required = false)@Nullable String since,
-    @RequestParam(value="open_issues", required = false)@Nullable Integer open_issues,
-    @RequestParam(value="topic",required = false)@Nullable String topic,
-    @RequestParam(value="limit", required = false)@Nullable Integer limit){
+[{"id":132464395,"full_name":"Snailclimb/JavaGuide","html_url":"https://github.com/Snailclimb/JavaGuide","language":"java","created_at":"2018-05-07T13:27:00Z","stars":121609,"forks":41264,"watch":121609,"open_issues":67}]
 ```
 
-This function will return data of Github repositories in the database.
+#### getIssueEvents
+
+This API is used to return the frequency distribution of issue events on dates of a certain repository. 
+
+Example: `localhost:****/issueEvents?repos_name=/JavaGuide`
+
+```java
+{"dates":["2022-04-24","2022-04-25","2022-04-26","2022-04-27","2022-04-28","2022-04-29","2022-04-30","2022-05-01","2022-05-02","2022-05-03","2022-05-04","2022-05-05","2022-05-06","2022-05-07","2022-05-08","2022-05-09","2022-05-10","2022-05-11","2022-05-12","2022-05-13","2022-05-14","2022-05-15","2022-05-16","2022-05-17","2022-05-18","2022-05-19","2022-05-20","2022-05-21","2022-05-22","2022-05-23","2022-05-24"],"nums":[0,8,4,2,7,0,0,2,1,2,0,0,7,0,3,0,0,2,3,0,0,6,0,0,2,4,4,5,0,0,0]}
+```
+
+#### getUserEvents
+
+This API is used to return the recent user events of a certain user.
+
+Example: `localhost:****/Leosang-lx/userEvents`
+
+```java
+{"dates":["2022-04-24","2022-04-25","2022-04-26","2022-04-27","2022-04-28","2022-04-29","2022-04-30","2022-05-01","2022-05-02","2022-05-03","2022-05-04","2022-05-05","2022-05-06","2022-05-07","2022-05-08","2022-05-09","2022-05-10","2022-05-11","2022-05-12","2022-05-13","2022-05-14","2022-05-15","2022-05-16","2022-05-17","2022-05-18","2022-05-19","2022-05-20","2022-05-21","2022-05-22","2022-05-23","2022-05-24"],"nums":[0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,3,2,0,1,0,3,15,0,0,0,0,0,0,21,9,7]}
+```
+
+#### topicsFrequency
+
+This API is used to return the frequency distribution of repository labels in database.
+
+Example: `localhost:****/topicsFrequency?limit=10`
+
+```java
+[{"name":"python","value":47},{"name":"java","value":27},{"name":"android","value":22},{"name":"deep-learning","value":16},{"name":"machine-learning","value":14},{"name":"hacktoberfest","value":10},{"name":"spring-boot","value":9},{"name":"data-science","value":8},{"name":"mybatis","value":8},{"name":"redis","value":8}]
+```
+
+#### getIssues
+
+This API is used to return issues of a certain repository with some filter conditions.
+
+Example: `localhost:****/JavaGuide/issues`
+
+```java
+[{"id":1243708832,"repos_id":132464395,"number":1733,"state":"closedI","created_at":"2022-05-20T21:49:10Z","updated_at":"2022-05-21T05:45:05Z","closed_at":"2022-05-21T03:04:30Z","labeled":true},...]
+```
+
+#### getReposIssuesNum
+
+This API is used to return some results of the statistics on issues of a certain repository.
+
+Where "t" means number of issues with label, and "f" means number of issues without label.
+
+Example: `localhost:****/JavaGuide/issues_num`
+
+```java
+{"t":13,"f":19,"closedI":26,"avg_closed_time":0.0,"openI":6}
+```
+
+#### getUserRepos
+
+This API is used to return the repositories list owned by a certain user.
+
+Example: `localhost:****/Leosang-lx/list_repositories`
+
+```java
+[{"id":494948523,"full_name":"Leosang-lx/CS209-data-visualiaztion","html_url":"https://github.com/Leosang-lx/CS209-data-visualiaztion","language":"JavaScript","created_at":"2022-05-22T03:22:33Z","stars":1,"forks":0,"watch":1,"open_issues":0},...]
+```
+
+#### getUserEvents
+
+This API is used to return user events of a certain user recently.
+
+Example: `localhost:****/Leosang-lx/userevents`
+
+```java
+[{"id":21952262271,"type":"PushEvent","actor_id":62881345,"repos_id":494948523,"created_at":"2022-05-24T08:57:44Z"},{"id":21950941706,"type":"PushEvent","actor_id":62881345,"repos_id":494948523,"created_at":"2022-05-24T07:52:31Z"},...]
+```
+
+#### downloadFiles
+
+This API is used for downloading necessary file mentioned in `html` file, like `jquery.js`.
+
+Example: `localhost:****/download/js/jquery.js`
+
+After going to the above URL (with correct host IP), the browser will download the file `jquery.js`.
+
+
+
+### PageController.java
+
+This class are mainly for the page direction. To enter the homepage of our project, type `localhost:****` then it will redirect to the homepage `New.html`.
 

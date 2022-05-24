@@ -226,30 +226,28 @@ public class GetData {
         }
     }
 
-    public static Map<String, List<Object>> getTopicsFrequency(Integer limit){
-        Map<String, List<Object>> msi = new HashMap<>();
-        Integer num = limit!=null&&limit>0? limit : 10;
+    public static List<Map<String, Object>> getTopicsFrequency(Integer limit){
+        List<Map<String, Object>> lmso = new ArrayList<>();
+        Integer num = limit!=null&&limit>0? limit : 20;
         String query = String.format("select a.topic, count(*) as cnt from (select topic from repos_topics) as a group by a.topic order by cnt desc limit %d;",num);
         try{
-            List<Object> ls = new ArrayList<>();
-            List<Object> li = new ArrayList<>();
             Connection conn = null;
             Statement stmt = null;
             conn = DriverManager.getConnection(url,user,password);
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             while(rs.next()){
-                ls.add(rs.getString(1));
-                li.add(rs.getInt(2));
+                Map<String, Object> mso = new HashMap<>();
+                mso.put("name",rs.getString(1));
+                mso.put("value",rs.getInt(2));
+                lmso.add(mso);
             }
-            msi.put("topic", ls);
-            msi.put("frequency", li);
             stmt.close();
             conn.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return msi;
+        return lmso;
     }
 
     public static Map<String, Object> analyseIssues(@NotNull String repos_name){
@@ -358,6 +356,7 @@ public class GetData {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println(lue.size());
         return lue;
     }
 

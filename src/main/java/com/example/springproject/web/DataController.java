@@ -152,10 +152,10 @@ public class DataController {
         return msl;
     }
 
-    @GetMapping("/userEvents")
+    @GetMapping("/{username}/userEvents")
     @CrossOrigin
     public Map<String, List<Object>> getUserEvents(
-            @RequestParam(value="username") String username,
+            @PathVariable(value="username") String username,
             @RequestParam(value="begin",required = false)@Nullable String begin,
             @RequestParam(value="end", required = false)@Nullable String end,
             @RequestParam(value="events",required = false)@Nullable String events
@@ -227,7 +227,7 @@ public class DataController {
 
     @GetMapping("/topicsFrequency")
     @CrossOrigin
-    public Map<String, List<Object>> topicsFrequency(@RequestParam(value = "limit", required = false) Integer limit){
+    public List<Map<String, Object>> topicsFrequency(@RequestParam(value = "limit", required = false) Integer limit){
         return GetData.getTopicsFrequency(limit);
     }
 
@@ -253,11 +253,11 @@ public class DataController {
         if(!msi.containsKey("f")){
             msi.put("f",0);
         }
-        if(!msi.containsKey("open")){
-            msi.put("open",0);
+        if(!msi.containsKey("openI")){
+            msi.put("openI",0);
         }
-        if(!msi.containsKey("closed")){
-            msi.put("closed",0);
+        if(!msi.containsKey("closedI")){
+            msi.put("closedI",0);
         }
         return msi;
     }
@@ -282,7 +282,7 @@ public class DataController {
         return GetData.getUserEvents(username,since);
     }
 
-    @GetMapping("/repos_labels/{repos_name}")
+    @GetMapping("/{repos_name}/repos_labels")
     @CrossOrigin
     public Map<String, List<String>> getLabelsOfRepos(@PathVariable(value = "repos_name")@NotNull String repos_name){
         Map<String, List<String>> msl = new HashMap<>();
