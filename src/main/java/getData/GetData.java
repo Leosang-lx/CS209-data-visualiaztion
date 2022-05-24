@@ -268,7 +268,7 @@ public class GetData {
             while(rs.next()){
                 msi.put(rs.getString(1),rs.getInt(2));
             }
-            rs = stmt.executeQuery(String.format("select avg(date_part('day',cast(to_date(substr(i.closed_at,1,10), 'YYYY-MM-DD') as TIMESTAMP) - cast(to_date(substr(i.created_at,1,10), 'YYYY-MM-DD') as TIMESTAMP))) from issue i left join github_repos_info gri on gri.id = i.repos_id where state = 'closed' and gri.full_name = '%s';",repos_name));
+            rs = stmt.executeQuery(String.format("select avg(date_part('day',cast(to_date(substr(i.closed_at,1,10), 'YYYY-MM-DD') as TIMESTAMP) - cast(to_date(substr(i.created_at,1,10), 'YYYY-MM-DD') as TIMESTAMP))) from issue i left join github_repos_info gri on gri.id = i.repos_id where state = 'closedI' and gri.full_name = '%s';",repos_name));
             rs.next();
             msi.put("avg_closed_time",rs.getDouble(1));
             stmt.close();
@@ -356,7 +356,7 @@ public class GetData {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(lue.size());
+//        System.out.println(lue.size());
         return lue;
     }
 

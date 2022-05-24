@@ -322,7 +322,7 @@ public class DataController {
                     os.write(buffer, 0, i);
                     os.flush();
                 }
-                System.out.println("Download file successfully!");
+                System.out.printf("Download file %s successfully!\n",filename);
             }
             catch (Exception e) {
                 System.out.println("Download file failed!");

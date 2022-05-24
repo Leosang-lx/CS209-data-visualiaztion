@@ -19,7 +19,7 @@ public class PageTransport {
     }
     @GetMapping("/index")
     public String index(){
-        return "New";
+        return "Main";
     }
     @GetMapping()
     public String homepage(){

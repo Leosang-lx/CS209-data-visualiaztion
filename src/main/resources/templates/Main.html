@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CS209A Project</title>
+    <script src="http://192.168.43.29:8888/download/js/echarts.js"></script>
+    <script src="http://192.168.43.29:8888/download/js/jquery.js"></script>
+    <script src="http://192.168.43.29:8888/download/js/echarts-wordcloud.js"></script>
+    <style>
+        html {
+            width:              100%;
+            height:             100%;
+            overflow-y:         auto;
+        }
+
+        body {
+            width:              100%;
+            height:             100%;
+            margin:             0;
+            position:           relative;
+        }
+
+        #title_bar {
+            display:            block;
+            width:              inherit;
+            height:             5vw;
+            color:              #e7e7eb;
+            background-color:   #009688;
+        }
+        #menu_button {
+            display:            inline-block;
+            width:              5vw;
+            height:             5vw;
+            float:              left;
+            color:              inherit;
+            background-color:   inherit;
+            border:             none;
+            cursor:             pointer;
+            font-size:          2vw;
+        }
+        #title_name {
+            display:            inline-block;
+            height:             inherit;
+            float:              left;
+            color:              inherit;
+            font-size:          2vw;
+            line-height:        5vw;
+        }
+        #search_button {
+            display:            inline-block;
+            width:              5vw;
+            height:             5vw;
+            float:              right;
+            color:              inherit;
+            background-color:   inherit;
+            border:             none;
+            cursor:             pointer;
+            font-size:          2vw;
+        }
+        #website_name {
+            display:            inline-block;
+            height:             5vw;
+            color:              inherit;
+            background-color:   inherit;
+            font-size:          4vw;
+            font-style:         italic;
+            float:              right;
+            margin-top:         0;
+            line-height:        5vw;
+        }
+
+        #side_bar {
+            display:            inline-block;
+            box-shadow:         0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+            height:             100%;
+            transition:         1s;
+            float:              left;
+            overflow:           hidden;
+        }
+        .side_tag {
+            display:            block;
+            width:              100%;
+            height:             3vw;
+            border:             none;
+            font-size:          1.5vw;
+            text-align:         left;
+            padding-left:       1.5vw;
+        }
+
+        #search_bar {
+            display:            block;
+            box-shadow:         0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+            height:             50%;
+            background-color:   #ffffff;
+            transition:         1s;
+            float:              right;
+            overflow:           hidden;
+            position:           absolute;
+            right: 0;
+        }
+
+        #main_body {
+            display:            inline-block;
+            height:             100%;
+            float:              left;
+            transition:         1s;
+            overflow:           hidden;
+        }
+
+        #test {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+<span id="title_bar">
+    <button id="menu_button"
+            onmousemove="this.style.backgroundColor='#c7c6c6';this.style.color='#000000'"
+            onmouseleave="this.style.backgroundColor='#009688';this.style.color='#ffffff'"
+            onclick="openMenu()"
+    >&#9776;
+    </button>
+
+    <span id="title_name">← Open the menu to start viewing</span>
+
+    <button id="search_button"
+            onmousemove="this.style.backgroundColor='#c7c6c6';this.style.color='#000000'"
+            onmouseleave="this.style.backgroundColor='#009688';this.style.color='#ffffff'"
+            onclick="openSearch()"
+    >🔍
+    </button>
+
+    <span id="website_name">Data Virtualization</span>
+</span>
+
+<div id="side_bar" style="width: 0">
+    <button class="side_tag" onclick="topic()">Topic</button>
+    <button class="side_tag" onclick="repository()">Repository</button>
+    <button class="side_tag" onclick="events()">Event</button>
+    <button class="side_tag" onclick="issue()">Issue</button>
+    <button class="side_tag" onclick="label()">Label</button>
+    <button class="side_tag" onclick="activation()">User</button>
+</div>
+
+<div id="main_body" style="width: 100%">
+    <span id="tag_container"></span>
+    <div id="chart_container" style="width: 100%;height: 100%"></div>
+</div>
+
+<div id="search_bar" style="width: 0"></div>
+
+<script>
+    const host = "http://192.168.43.29:8888";
+    let isFirst = true;
+    let currentName = null;
+    let repositoryList = [];
+    let myChart = echarts.init(document.getElementById('chart_container'));
+
+    function openMenu() {
+        if (isFirst) {
+            document.getElementById('title_name').innerText = "↓ Select tags you want";
+            isFirst = false;
+        }
+
+        if (document.getElementById('side_bar').style.width !== "20%") {
+            document.getElementById('main_body').style.width = "80%";
+            document.getElementById('side_bar').style.width = "20%";
+        }
+        else {
+            document.getElementById('main_body').style.width = "100%";
+            document.getElementById('side_bar').style.width = "0";
+        }
+    }
+    function openSearch() {
+        if (document.getElementById('search_bar').style.width !== "40vw") {
+            document.getElementById('search_bar').style.width = "40vw";
+        }
+        else {
+            document.getElementById('search_bar').style.width = "0";
+        }
+    }
+
+    function createUpperTag(name) {
+        let make = true;
+
+        for (let i = 0; i < repositoryList.length; i++) {
+            if (repositoryList[i] === name) {
+                make = false;
+                break;
+            }
+        }
+
+        if (make) {
+            let newButton1 = document.createElement("button");
+            newButton1.style.border = "none";
+            newButton1.style.float = "left";
+            newButton1.innerText = name;
+            newButton1.id = name;
+            newButton1.onclick = function() {selectUpperTag(this.innerText, this)};
+
+            let newButton2 = document.createElement("button");
+            newButton2.className = name;
+            newButton2.style.border = "none";
+            newButton2.style.float = "left";
+            newButton2.innerText = "×";
+            newButton2.onmouseenter = function () {newButton2.style.color = "red"};
+            newButton2.onmouseleave = function () {newButton2.style.color = "black"};
+            newButton2.onclick = function() {closeUpperTag(this.className, this, this.parentNode)};
+
+            let newLabel = document.createElement("label");
+            newLabel.style.display = "inline-block";
+            newLabel.style.marginRight = "0.5vw";
+            newLabel.appendChild(newButton1);
+            newLabel.appendChild(newButton2);
+
+            document.getElementById('tag_container').appendChild(newLabel)
+            repositoryList.push(name);
+
+            if (currentName == null) {
+                currentName = name;
+                newButton1.style.color = "blue";
+            }
+        }
+    }
+    function closeUpperTag(name, this_tag, this_parent_tag) {
+        console.log(name)
+        for (let j = 0; j < repositoryList.length; j++) {
+            if (repositoryList[j] === name) {
+                repositoryList.splice(j, 1);
+                break;
+            }
+        }
+        if (currentName === name) {
+            if (repositoryList.length > 0) {
+                currentName = repositoryList[0];
+                document.getElementById(repositoryList[0]).style.color = "blue";
+            }
+            else {
+                currentName = null;
+            }
+        }
+        this_tag.remove();
+        this_parent_tag.remove();
+        console.log(repositoryList);
+        console.log(currentName);
+    }
+    function selectUpperTag(name, this_tag) {
+        document.getElementById(currentName).style.color = "black";
+        currentName = name;
+        this_tag.style.color = "blue";
+    }
+
+    function createSearchOption(typeName, defaultValue, id) {
+        let b = document.createElement("label");
+        b.innerText = typeName + ": ";
+        b.style.fontSize = "2vw"
+
+        let s = document.createElement("input");
+        s.style.height = "2vw";
+        s.style.fontSize = "1.5vw"
+        s.type = "search";
+        s.id = id;
+        s.placeholder = defaultValue;
+
+        let l = document.createElement("label");
+        l.style.display = "block";
+        l.style.margin = "0.5vw"
+        l.style.whiteSpace = "nowrap";
+        l.appendChild(b);
+        l.appendChild(s);
+
+        document.getElementById('search_bar').appendChild(l);
+
+        return l;
+    }
+    function createCheckOption(typeName, id) {
+        let b = document.createElement("label");
+        b.innerText = typeName
+
+        let s = document.createElement("input");
+        s.type = "checkbox"
+
+        let l = document.createElement("label");
+        l.id = id;
+        l.style.display = "block";
+        l.style.whiteSpace = "nowrap";
+        l.appendChild(b);
+        l.appendChild(s);
+
+        document.getElementById('search_bar').appendChild(l);
+
+        return l;
+    }
+
+    function topic() {
+        openMenu();
+        if(document.getElementById('condition') !== null) {
+            document.getElementById('condition').remove();
+        }
+
+        document.getElementById('title_name').innerText = "Topic";
+        let d = document.createElement('div');
+        d.appendChild(createSearchOption('number', 20, 'limit'));
+        d.id = 'condition';
+
+        let b = document.createElement("button");
+        b.style.border = "none";
+        b.style.width = "6vw";
+        b.style.height = "2vw";
+        b.style.fontSize = "1.5vw";
+        b.innerText = "Submit";
+        b.style.display = "block";
+        b.style.margin = "0.5vw";
+        b.onclick = function () {submitTopic()};
+
+        d.appendChild(b);
+        document.getElementById('search_bar').appendChild(d);
+    }
+    function submitTopic() {
+        openSearch();
+        myChart.dispose();
+
+        let dataList = {};
+        let request = host + "/topicsFrequency?";
+
+        if (document.getElementById('limit').value !== "") {
+            request = request + "&limit=" + document.getElementById('limit').value;
+        }
+
+        $.ajax({
+            type:"get",
+            async:false,
+            url: request,
+            dataType:"json",
+            success:function(data) {
+                dataList = data;
+            },
+            error: function(XMLHttpRequest, textStatus) {
+                alert(XMLHttpRequest.status);
+                alert(XMLHttpRequest.readyState);
+                alert(textStatus);
+            }
+        });
+
+        myChart = echarts.init(document.getElementById('chart_container'));
+
+        const option = {
+            display: "inline-block",
+            float: "left",
+            position: "relative",
+            height: "80%",
+            series: [{
+                type: 'wordCloud',
+                sizeRange: [15, 80],
+                rotationRange: [0, 0],
+                rotationStep: 45,
+                gridSize: 8,
+                shape: 'diamond',
+                width: '100%',
+                height: '100%',
+                tooltip: {
+                    trigger: 'item'
+                },
+                textStyle: {
+                    color: function() {
+                        return 'rgb(' +
+                            Math.round(Math.random() * 160) +
+                            ', ' + Math.round(Math.random() * 160) +
+                            ', ' + Math.round(Math.random() * 160) + ')'
+                    },
+                    fontFamily: 'sans-serif',
+                    fontWeight: 'normal',
+                    emphasis: {
+                        shadowBlur: 10,
+                        shadowColor: '#333'
+                    }
+                },
+                data: dataList
+            }]
+        };
+
+        myChart.setOption(option);
+
+        window.addEventListener("resize", function() {
+            myChart.resize();
+        });
+    }
+
+    function repository() {
+        openMenu();
+        if(document.getElementById('condition') !== null) {
+            document.getElementById('condition').remove();
+        }
+
+        document.getElementById('title_name').innerText = "Repository";
+        let d = document.createElement('div');
+        d.appendChild(createSearchOption('language', 'java', 'language'));
+        d.appendChild(createSearchOption('least stars', '1000', 'stars'));
+        d.appendChild(createSearchOption('start time', '2022-05-18T00:00:00Z', 'since'));
+        d.appendChild(createSearchOption('least open issues', '50', 'open_issues'));
+        d.appendChild(createSearchOption('topic', 'java', 'topic'))
+        d.appendChild(createSearchOption('number limit', '10', 'limit'));
+        d.id = 'condition';
+
+        let b = document.createElement("button");
+        b.style.border = "none";
+        b.style.width = "6vw";
+        b.style.height = "2vw";
+        b.style.fontSize = "1.5vw";
+        b.innerText = "Submit";
+        b.style.display = "block";
+        b.style.margin = "0.5vw";
+        b.onclick = function () {submitRepository()};
+
+        d.appendChild(b);
+        document.getElementById('search_bar').appendChild(d);
+    }
+    function submitRepository() {
+        openSearch();
+        myChart.dispose();
+
+        let dataList = {};
+        let request = host + "/filterRepos?";
+
+        if (document.getElementById('language').value !== "") {
+            request = request + "&language=" + document.getElementById('language').value;
+        }
+        if (document.getElementById('stars').value !== "") {
+            request = request + "&stars=" + document.getElementById('stars').value;
+        }
+        if (document.getElementById('since').value !== "") {
+            request = request + "&since=" + document.getElementById('since').value;
+        }
+        if (document.getElementById('open_issues').value !== "") {
+            request = request + "&open_issues=" + document.getElementById('open_issues').value;
+        }
+        if (document.getElementById('topic').value !== "") {
+            request = request + "&topic=" + document.getElementById('topic').value;
+        }
+        if (document.getElementById('limit').value !== "") {
+            request += request + "&limit=" + document.getElementById('limit').value;
+        }
+
+        $.ajax({
+            type:"get",
+            async:false,
+            url: request,
+            dataType:"json",
+            success:function(data) {
+                dataList = data;
+            },
+            error:function() {
+                alert("请求失败");
+            }
+        });
+
+        const nameList = [];
+        for (let i = 0; i < dataList.length; i++) {
+            nameList.push(dataList[i].full_name);
+        }
+        saveRepository(nameList);
+        const starList = [];
+        for (let i = 0; i < dataList.length; i++) {
+            starList.push(dataList[i].stars);
+        }
+        const forkList = [];
+        for (let i = 0; i < dataList.length; i++) {
+            forkList.push(dataList[i].forks);
+        }
+        const watchList = [];
+        for (let i = 0; i < dataList.length; i++) {
+            watchList.push(dataList[i].watch);
+        }
+
+        myChart = echarts.init(document.getElementById('chart_container'));
+        const option = {
+            display: "inline-block",
+            float: "left",
+            position: "relative",
+            height: "80%",
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                }
+            },
+            legend: {},
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value'
+            },
+            yAxis: {
+                type: 'category',
+                data: nameList
+            },
+            series: [
+                {
+                    name: 'Star',
+                    type: 'bar',
+                    stack: 'total',
+                    label: {
+                        show: true
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: starList
+                },
+                {
+                    name: 'Fork',
+                    type: 'bar',
+                    stack: 'total',
+                    label: {
+                        show: true
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: forkList
+                },
+                {
+                    name: 'Watch',
+                    type: 'bar',
+                    stack: 'total',
+                    label: {
+                        show: true
+                    },
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: watchList
+                },
+            ]
+        };
+        myChart.setOption(option);
+
+        window.addEventListener("resize", function() {
+            myChart.resize();
+        });
+    }
+    function saveRepository(nameList) {
+        for(let i = 0; i < nameList.length; i++) {
+            createUpperTag(nameList[i]);
+        }
+    }
+
+    function events() {
+        openMenu();
+        if(document.getElementById('condition') !== null) {
+            document.getElementById('condition').remove();
+        }
+
+        document.getElementById('title_name').innerText = "Event";
+        let d = document.createElement('div');
+        d.appendChild(createSearchOption('repository name', 'Snailclimb/JavaGuide', 'repos_name'));
+        d.appendChild(createSearchOption('start time', '2022-05-04', 'begin'));
+        d.appendChild(createSearchOption('end time', '2022-05-18', 'end'));
+        d.appendChild(createSearchOption('event type', 'merged', 'events'));
+        d.id = 'condition';
+
+        let b = document.createElement("button");
+        b.style.border = "none";
+        b.style.width = "6vw";
+        b.style.height = "2vw";
+        b.style.fontSize = "1.5vw";
+        b.innerText = "Submit";
+        b.style.display = "block";
+        b.style.margin = "0.5vw";
+        b.onclick = function () {submitEvents()};
+
+        d.appendChild(b);
+        document.getElementById('search_bar').appendChild(d);
+    }
+    function submitEvents() {
+        openSearch();
+        myChart.dispose();
+
+        let dataList = {};
+        let request = host + "/issueEvents?";
+
+        if (document.getElementById('repos_name').value !== "") {
+            request = request + "&repos_name=" + document.getElementById('repos_name').value;
+        }
+        else {
+            request = request + "&repos_name=" + currentName;
+        }
+        if (document.getElementById('begin').value !== "") {
+            request = request + "&begin=" + document.getElementById('begin').value;
+        }
+        if (document.getElementById('end').value !== "") {
+            request = request + "&end=" + document.getElementById('end').value;
+        }
+        if (document.getElementById('events').value !== "") {
+            request = request + "&events=" + document.getElementById('events').value;
+        }
+
+        $.ajax({
+            type:"get",
+            async:false,
+            url: request,
+            dataType:"json",
+            success:function(data) {
+                dataList = data;
+            },
+            error: function(XMLHttpRequest, textStatus) {
+                alert(XMLHttpRequest.status);
+                alert(XMLHttpRequest.readyState);
+                alert(textStatus);
+            }
+        });
+
+        myChart = echarts.init(document.getElementById('chart_container'));
+
+        const option = {
+            display: "inline-block",
+            float: "left",
+            position: "relative",
+            height: "80%",
+            xAxis: {
+                type: 'category',
+                data: dataList.dates
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [
+                {
+                    data: dataList.nums,
+                    type: 'line'
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+
+        window.addEventListener("resize", function() {
+            myChart.resize();
+        });
+    }
+
+    function issue() {
+        openMenu();
+        if(document.getElementById('condition') !== null) {
+            document.getElementById('condition').remove();
+        }
+
+        document.getElementById('title_name').innerText = "Issue";
+        let d = document.createElement('div');
+        d.appendChild(createSearchOption('repository name','Snailclimb/JavaGuide','repos_name'));
+        d.id = 'condition';
+
+        let b = document.createElement("button");
+        b.style.border = "none";
+        b.style.width = "6vw";
+        b.style.height = "2vw";
+        b.style.fontSize = "1.5vw";
+        b.innerText = "Submit";
+        b.style.display = "block";
+        b.style.margin = "0.5vw";
+        b.onclick = function () {submitIssue()};
+
+        d.appendChild(b);
+        document.getElementById('search_bar').appendChild(d);
+    }
+    function submitIssue() {
+        openSearch();
+        myChart.dispose();
+
+        let dataList = {};
+        let request = host + "/issues_num?";
+        if (document.getElementById('repos_name').value !== "") {
+            request = request + "&repos_name=" + document.getElementById('repos_name').value;
+        }
+        else {
+            request = request + "&repos_name=" + currentName;
+        }
+
+        $.ajax({
+            type:"get",
+            async:false,
+            url: request,
+            dataType:"json",
+            success:function(data) {
+                dataList = data;
+            },
+            error: function(XMLHttpRequest, textStatus) {
+                alert(XMLHttpRequest.status);
+                alert(XMLHttpRequest.readyState);
+                alert(textStatus);
+            }
+        });
+
+        myChart = echarts.init(document.getElementById('chart_container'));
+
+        const option = {
+            display: "inline-block",
+            float: "left",
+            position: "relative",
+            height: "80%",
+            title: {
+                text: 'Average Closed Time: ' + dataList.avg_closed_time + ' days',
+                left: 'center',
+                marginHeight: '10%'
+            },
+            tooltip: {
+                trigger: 'item'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left'
+            },
+            series: [
+                {
+                    name: 'Label state',
+                    type: 'pie',
+                    radius: '50%',
+                    center: ['25%','50%'],
+                    data: [
+                        { value: dataList.openI, name: 'open issues' },
+                        { value: dataList.closedI, name: 'closed issues' },
+                    ],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                },
+                {
+                    name: 'with Label',
+                    type: 'pie',
+                    radius: '50%',
+                    center: ['75%','50%'],
+                    data: [
+                        { value: dataList.t, name: 'issue with label' },
+                        { value: dataList.f, name: 'issue without label' },
+                    ],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+
+        window.addEventListener("resize", function() {
+            myChart.resize();
+        });
+    }
+
+    function label() {
+        openMenu();
+        if(document.getElementById('condition') !== null) {
+            document.getElementById('condition').remove();
+        }
+
+        document.getElementById('title_name').innerText = "Label";
+        let d = document.createElement('div');
+        d.appendChild(createSearchOption('repository name','Snailclimb/JavaGuide','repos_name'));
+        d.id = 'condition';
+
+        let b = document.createElement("button");
+        b.style.border = "none";
+        b.style.width = "6vw";
+        b.style.height = "2vw";
+        b.style.fontSize = "1.5vw";
+        b.innerText = "Submit";
+        b.style.display = "block";
+        b.style.margin = "0.5vw";
+        b.onclick = function () {submitLabel()};
+
+        d.appendChild(b);
+        document.getElementById('search_bar').appendChild(d);
+    }
+    function submitLabel() {
+        openSearch();
+        myChart.dispose();
+
+        let dataList = {};
+        let request = host + "/labels_freq?";
+        if (document.getElementById('repos_name').value !== "") {
+            request = request + "&repos_name=" + document.getElementById('repos_name').value;
+        }
+        else {
+            request = request + "&repos_name=" + currentName;
+        }
+
+        $.ajax({
+            type:"get",
+            async:false,
+            url: request,
+            dataType:"json",
+            success:function(data) {
+                dataList = data;
+            },
+            error: function(XMLHttpRequest, textStatus) {
+                alert(XMLHttpRequest.status);
+                alert(XMLHttpRequest.readyState);
+                alert(textStatus);
+            }
+        });
+
+        myChart = echarts.init(document.getElementById('chart_container'));
+
+        option = {
+            display: "inline-block",
+            float: "left",
+            position: "relative",
+            height: "80%",
+            title: {
+                text: 'Label'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b} : {c}'
+            },
+            toolbox: {
+                feature: {
+                    dataView: { readOnly: false },
+                    restore: {},
+                    saveAsImage: {}
+                }
+            },
+            legend: {
+            },
+            series: [
+                {
+                    name: 'Label',
+                    type: 'funnel',
+                    left: '10%',
+                    top: 60,
+                    bottom: 60,
+                    width: '80%',
+                    min: 0,
+                    max: 100,
+                    minSize: '0%',
+                    maxSize: '1000%',
+                    sort: 'descending',
+                    gap: 2,
+                    label: {
+                        show: true,
+                        position: 'inside'
+                    },
+                    labelLine: {
+                        length: 10,
+                        lineStyle: {
+                            width: 1,
+                            type: 'solid'
+                        }
+                    },
+                    itemStyle: {
+                        borderColor: '#fff',
+                        borderWidth: 1
+                    },
+                    emphasis: {
+                        label: {
+                            fontSize: 20
+                        }
+                    },
+                    data: dataList
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+
+        window.addEventListener("resize", function() {
+            myChart.resize();
+        });
+    }
+
+    function activation() {
+        openMenu();
+        if(document.getElementById('condition') !== null) {
+            document.getElementById('condition').remove();
+        }
+
+        document.getElementById('title_name').innerText = "User";
+        let d = document.createElement('div');
+        d.appendChild(createSearchOption('user name','Leosang-lx','user_name'));
+        d.id = 'condition';
+
+        let b = document.createElement("button");
+        b.style.border = "none";
+        b.style.width = "6vw";
+        b.style.height = "2vw";
+        b.style.fontSize = "1.5vw";
+        b.innerText = "Submit";
+        b.style.display = "block";
+        b.style.margin = "0.5vw";
+        b.onclick = function () {submitActivation()};
+
+        d.appendChild(b);
+        document.getElementById('search_bar').appendChild(d);
+    }
+    function submitActivation() {
+        openSearch();
+        myChart.dispose();
+
+        let dataList = {};
+        let request = host
+        if (document.getElementById('user_name').value !== "") {
+            request = request + "/" + document.getElementById('user_name').value + "/userEvents";
+        }
+        else {
+            request = request + "/" + "Leosang-lx" + "/userEvents";
+        }
+
+        $.ajax({
+            type:"get",
+            async:false,
+            url: request,
+            dataType:"json",
+            success:function(data) {
+                dataList = data;
+            },
+            error: function(XMLHttpRequest, textStatus) {
+                alert(XMLHttpRequest.status);
+                alert(XMLHttpRequest.readyState);
+                alert(textStatus);
+            }
+        });
+
+        myChart = echarts.init(document.getElementById('chart_container'));
+
+        const option = {
+            display: "inline-block",
+            float: "left",
+            position: "relative",
+            height: "80%",
+            title: {
+                text: 'User Activation',
+                left: '1%'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            grid: {
+                left: '5%',
+                right: '15%',
+                bottom: '10%'
+            },
+            xAxis: {
+                data: dataList.dates
+            },
+            yAxis: {},
+            toolbox: {
+                right: 10,
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: 'none'
+                    },
+                    restore: {},
+                    saveAsImage: {}
+                }
+            },
+            dataZoom: [
+                {
+                    startValue: '2014-06-01'
+                },
+                {
+                    type: 'inside'
+                }
+            ],
+            visualMap: {
+                top: 50,
+                right: 10,
+                pieces: [
+                    {
+                        gt: 0,
+                        lte: 5,
+                        color: '#93CE07'
+                    },
+                    {
+                        gt: 5,
+                        lte: 10,
+                        color: '#FBDB0F'
+                    },
+                    {
+                        gt: 10,
+                        lte: 15,
+                        color: '#FC7D02'
+                    },
+                    {
+                        gt: 15,
+                        lte: 20,
+                        color: '#FD0100'
+                    },
+                    {
+                        gt: 20,
+                        lte: 30,
+                        color: '#AA069F'
+                    },
+                    {
+                        gt: 30,
+                        color: '#AC3B2A'
+                    }
+                ],
+                outOfRange: {
+                    color: '#999'
+                }
+            },
+            series: {
+                name: 'Events',
+                type: 'line',
+                data: dataList.nums,
+                markLine: {
+                    silent: true,
+                    lineStyle: {
+                        color: '#333'
+                    },
+                    data: [
+                        {
+                            yAxis: 50
+                        },
+                        {
+                            yAxis: 100
+                        },
+                        {
+                            yAxis: 150
+                        },
+                        {
+                            yAxis: 200
+                        },
+                        {
+                            yAxis: 300
+                        }
+                    ]
+                }
+            }
+        }
+
+        myChart.setOption(option);
+
+        window.addEventListener("resize", function() {
+            myChart.resize();
+        });
+    }
+</script>
+</body>
+</html>

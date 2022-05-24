@@ -22,7 +22,7 @@ The data are accessed by `github.api` and using `jsoup`. With provided github AP
 
 ### Design of database
 
-![database](./database.jpg)
+![database](pictures/database.jpg)
 
 The database has five tables with the above dependency relationships. And the columns in tables are only part of the data that we want to analyze from `api.github.com`. While we didn't take much data for repository, since it cost a lot to collect the relevant data of issues. And the scale of the data can is shown below:
 
