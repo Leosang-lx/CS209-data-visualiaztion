@@ -11,7 +11,7 @@ import org.jsoup.Jsoup;
 
 import javax.validation.constraints.NotNull;
 
-public class getData {
+public class GetData {
     private static Map<String, String> headers = new HashMap<>();
     private static final String url = "jdbc:postgresql://localhost:5432/spring_project";
     private static final String user = "postgres";

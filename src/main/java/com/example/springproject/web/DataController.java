@@ -1,6 +1,6 @@
 package com.example.springproject.web;
 
-import getData.getData;
+import getData.GetData;
 import com.example.springproject.api.IssueRepository;
 import com.example.springproject.domain.Issue;
 import com.example.springproject.domain.UserEvent;
@@ -181,7 +181,7 @@ public class DataController {
                 before = LocalDate.parse(begin);
             }
         }
-        List<UserEvent> lie = getData.getUserEvents(
+        List<UserEvent> lie = GetData.getUserEvents(
                 username,
                 before.toString()
 //                end!=null?end:"",
@@ -228,7 +228,7 @@ public class DataController {
     @GetMapping("/topicsFrequency")
     @CrossOrigin
     public Map<String, List<Object>> topicsFrequency(@RequestParam(value = "limit", required = false) Integer limit){
-        return getData.getTopicsFrequency(limit);
+        return GetData.getTopicsFrequency(limit);
     }
 
     @GetMapping("/{repos_name}/issues")
@@ -245,7 +245,7 @@ public class DataController {
     @GetMapping("/{repos_name}/issues_num")
     @CrossOrigin
     public Map<String, Object> getReposIssuesNum(@PathVariable(value = "repos_name")@NotNull String repos_name){
-        Map<String, Object> msi = getData.analyseIssues(repos_name);
+        Map<String, Object> msi = GetData.analyseIssues(repos_name);
         if(!msi.containsKey("t")){
             msi.put("t",0);
         }
@@ -266,7 +266,7 @@ public class DataController {
     public List<GithubReposInfo> getUserRepos(
             @PathVariable(value = "username")@NotNull String username,
             @RequestParam(value = "limit", required = false) Integer limit){
-        return getData.getUserRepos(username, limit==null||limit<=0||limit>100? 30:limit);
+        return GetData.getUserRepos(username, limit==null||limit<=0||limit>100? 30:limit);
     }
 
     @GetMapping("/{username}/userevents")
@@ -276,9 +276,9 @@ public class DataController {
             @RequestParam(value = "since",required = false) String since){
         LocalDate thirtyBefore = LocalDate.now().minusDays(30);
         if(since==null||LocalDate.parse(since).compareTo(thirtyBefore)<0){
-            return getData.getUserEvents(username,thirtyBefore.toString());
+            return GetData.getUserEvents(username,thirtyBefore.toString());
         }
-        return getData.getUserEvents(username,since);
+        return GetData.getUserEvents(username,since);
     }
 
     @RequestMapping("/download/{filetype}/{filename}")
