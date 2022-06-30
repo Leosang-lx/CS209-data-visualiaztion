@@ -67,6 +67,7 @@ After click tab "Issue", it will show some statistics results on the recent issu
 ![issue](./pictures/issues.png)
 
 And if you click "Events", a table showing the frequency distribution of recent issue events of the selected repository will appear.
+![event](./pictures/events.png)
 
 If you click "Label", it will show you the table will labels and corresponding issues number.
 
